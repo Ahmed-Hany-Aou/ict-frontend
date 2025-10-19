@@ -1,8 +1,8 @@
 // ict-frontend/src/services/authService.ts
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+import api from './api';
 
-// --- Interfaces for Type Safety ---
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 interface LoginData {
   email: string;
@@ -48,23 +48,13 @@ class AuthService {
    */
   static async login(data: LoginData): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${API_URL}/api/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await api.post('/login', data);
+      const result = response.data;
 
-      const result = await response.json();
-
-      // ✅ Check for access_token instead of token
-      if (response.ok && result.access_token) {
+      if (response.status === 200 && result.access_token) {
         localStorage.setItem('auth_token', result.access_token);
         localStorage.setItem('user', JSON.stringify(result.user));
         
-        // Return normalized response
         return {
           success: true,
           message: result.message,
@@ -73,16 +63,15 @@ class AuthService {
         };
       }
       
-      // Handle error response
       return {
         success: false,
         message: result.message || 'Login failed',
         errors: result.errors,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        message: `Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        message: error.response?.data?.message || 'Connection error. Is the backend running?',
       };
     }
   }
@@ -99,19 +88,10 @@ class AuthService {
     };
 
     try {
-      const response = await fetch(`${API_URL}/api/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await api.post('/register', payload);
+      const result = response.data;
 
-      const result = await response.json();
-
-      // ✅ Check for access_token instead of token
-      if (response.ok && result.access_token) {
+      if (response.status === 200 && result.access_token) {
         localStorage.setItem('auth_token', result.access_token);
         localStorage.setItem('user', JSON.stringify(result.user));
         
@@ -128,36 +108,41 @@ class AuthService {
         message: result.message || 'Registration failed',
         errors: result.errors,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        message: `Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        message: error.response?.data?.message || 'Connection error',
       };
     }
+  }
+
+  /**
+   * Logout user
+   */
+  static async logout(): Promise<void> {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        await api.post('/logout');
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+    }
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
   }
 
   /**
    * Get current user (requires token)
    */
   static async getUser(): Promise<UserResponse | null> {
-    const token = localStorage.getItem('auth_token');
-    if (!token) return null;
-
     try {
-      const response = await fetch(`${API_URL}/api/user`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const result = await response.json();
+      const response = await api.get('/user');
+      
+      if (response.status === 200) {
         return {
           success: true,
-          user: result.user || result, // Handle both formats
+          user: response.data.user || response.data,
         };
       }
       return null;
@@ -172,49 +157,19 @@ class AuthService {
    */
   static async forgotPassword(data: ForgotPasswordData): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${API_URL}/api/forgot-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      
-      const result = await response.json();
+      const response = await api.post('/forgot-password', data);
       
       return {
-        success: response.ok,
-        message: result.message || (response.ok ? 'Reset link sent' : 'Failed to send reset link'),
-        ...result,
+        success: response.status === 200,
+        message: response.data.message || (response.status === 200 ? 'Reset link sent' : 'Failed to send reset link'),
+        ...response.data,
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        message: `Connection error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        message: error.response?.data?.message || 'Connection error',
       };
     }
-  }
-
-  /**
-   * Logout user
-   */
-  static async logout(): Promise<void> {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      try {
-        await fetch(`${API_URL}/api/logout`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    }
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
   }
 
   /**
