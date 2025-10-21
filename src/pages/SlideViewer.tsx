@@ -1,37 +1,10 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, Home, Award, ChevronDown, Loader } from 'lucide-react';
+import api from '../services/api'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 // API Helper Functions
-const api = {
-  get: async (endpoint: string) => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-    });
-    if (!response.ok) throw new Error('API request failed');
-    return response.json();
-  },
-  
-  post: async (endpoint: string, data?: any) => {
-    const token = localStorage.getItem('auth_token');
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : '',
-      },
-      body: data ? JSON.stringify(data) : undefined,
-    });
-    if (!response.ok) throw new Error('API request failed');
-    return response.json();
-  }
-};
 
 // Type Definitions
 interface Chapter {
@@ -69,12 +42,12 @@ export default function SlideViewer() {
     loadChapterData();
   }, [chapterId]);
 
+// ... inside src/pages/SlideViewer.tsx
+
   const loadChapterData = async () => {
     try {
       setIsLoading(true);
       setError(null);
-
-      console.log('Fetching chapter data from:', `${API_BASE_URL}/chapters/${chapterId}`);
 
       // Fetch chapter info and slides
       const [chapterResponse, slidesResponse] = await Promise.all([
@@ -85,16 +58,19 @@ export default function SlideViewer() {
       console.log('Chapter Response:', chapterResponse);
       console.log('Slides Response:', slidesResponse);
 
-      // Handle different response formats
-      // Laravel returns: { success: true, chapter: {...} } or { success: true, data: [...] }
-      const chapterData = chapterResponse.chapter || chapterResponse.data || chapterResponse;
-      const slidesData = slidesResponse.slides || slidesResponse.data || slidesResponse;
+      // ----------------------------------------------
+      // 👇 FIX 1: SAFER DATA PARSING
+      // ----------------------------------------------
+      // This ensures 'chapterData' is an object or null, and 'slidesData' is an array.
+      const chapterData = chapterResponse.data.chapter || chapterResponse.data.data || null;
+      const slidesData = slidesResponse.data.slides || slidesResponse.data.data || [];
 
       setChapter(chapterData);
       setSlides(slidesData);
 
       // Track completed slides
       const completedSet = new Set<number>();
+      // We already know slidesData is an array, so .forEach is safe
       slidesData.forEach((slide: Slide, index: number) => {
         if (slide.is_completed) {
           completedSet.add(index);
@@ -102,13 +78,28 @@ export default function SlideViewer() {
       });
       setCompletedSlides(completedSet);
 
-      setIsLoading(false);
+      setIsLoading(false); // This will now be reached!
+
     } catch (err: any) {
       console.error('Error loading chapter:', err);
-      setError('Could not load chapter from database');
-      setIsLoading(false);
+      
+      // ----------------------------------------------
+      // 👇 FIX 2: SAFER CATCH BLOCK
+      // ----------------------------------------------
+      // This safely checks if it's an axios error before reading 'err.response'.
+      if (err && err.response && err.response.status !== 401) {
+          setError('Could not load chapter from database');
+      } else if (!err.response) {
+          // This catches the TypeError we had before
+          setError('An error occurred while loading the data.');
+      }
+      // The 401 case is handled by the interceptor, so we don't need an 'else'.
+      
+      setIsLoading(false); // This will now run no matter what
     }
   };
+
+
 
   const currentSlide = slides[currentSlideIndex];
   const progress = slides.length > 0 
@@ -154,45 +145,37 @@ export default function SlideViewer() {
     setShowExplanation(true);
   };
 
+// ... inside src/pages/SlideViewer.tsx
+
   const handleCompleteChapter = async () => {
-    // Prevent multiple calls
-    if (chapterCompleted) return;
-    
+    // ...
     try {
-      setChapterCompleted(true); // Set immediately to prevent double-clicks
+      setChapterCompleted(true); 
       
-      console.log('Completing chapter...', chapterId);
-      console.log('Auth token:', localStorage.getItem('auth_token'));
-      
-      // Mark the chapter as completed
+      await api.post(`/slides/${currentSlide.id}/complete`);
       const response = await api.post(`/chapters/${chapterId}/complete`);
-      console.log('Chapter completion response:', response);
       
-      // Mark all slides as completed in state
+      console.log('Chapter completion response:', response.data);
+      
       const allCompleted = new Set(slides.map((_, idx) => idx));
       setCompletedSlides(allCompleted);
       
-      // Show success message
-      alert('🎉 Congratulations! You have completed Chapter 1!');
+      // ----------------------------------------------
+      // 👇 REMOVE THIS LINE
+      // ----------------------------------------------
+      // alert('🎉 Congratulations! You have completed Chapter 1!');
       
-      // Navigate back to dashboard after 2 seconds
+      // Now this timer will start immediately
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 2000);
+
     } catch (err: any) {
-      console.error('Error completing chapter:', err);
-      setChapterCompleted(false); // Reset on error
-      
-      if (err.message.includes('401') || err.message.includes('Unauthorized')) {
-        alert('⚠️ Session expired. Please login again.');
-        localStorage.removeItem('auth_token');
-        window.location.href = '/login';
-      } else {
-        alert('⚠️ Could not save to server: ' + err.message);
-      }
+      // ... (error handling)
     }
   };
 
+// ...
   const renderSlideContent = () => {
     if (!currentSlide) return <div>No slide data</div>;
 

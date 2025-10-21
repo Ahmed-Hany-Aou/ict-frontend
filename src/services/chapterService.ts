@@ -1,37 +1,16 @@
 // src/services/chapterService.ts
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
-
-const getAuthToken = () => localStorage.getItem('auth_token');
-
-const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
-  const token = getAuthToken();
-  
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': token ? `Bearer ${token}` : '',
-      ...options.headers,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`);
-  }
-
-  return response.json();
-};
+import api from './api'; // Import the global axios api client
 
 const ChapterService = {
   /**
    * Get all chapters with progress
    */
   async getChapters() {
-    const response = await apiRequest('/chapters');
+    // Use api.get() which returns { data: ... }
+    const response = await api.get('/chapters');
     
     // Your API returns: { success: true, chapters: [...] }
-    const chapters = response.chapters || response.data || response;
+    const chapters = response.data.chapters || response.data.data || response.data;
     
     // Map to match Dashboard's expected format
     return chapters.map((chapter: any) => ({
@@ -51,30 +30,30 @@ const ChapterService = {
    * Get single chapter with slides
    */
   async getChapter(chapterId: number) {
-    const response = await apiRequest(`/chapters/${chapterId}`);
+    const response = await api.get(`/chapters/${chapterId}`);
     
     // Response format: { success: true, chapter: {...} }
-    return response.chapter || response.data || response;
+    return response.data.chapter || response.data.data || response.data;
   },
 
   /**
    * Get all slides for a chapter
    */
   async getChapterSlides(chapterId: number) {
-    const response = await apiRequest(`/chapters/${chapterId}/slides`);
+    const response = await api.get(`/chapters/${chapterId}/slides`);
     
     // Response format: varies based on SlideController
-    return response.slides || response.data || response;
+    return response.data.slides || response.data.data || response.data;
   },
 
   /**
    * Get user's overall progress
    */
   async getUserProgress() {
-    const response = await apiRequest('/user/progress');
+    const response = await api.get('/user/progress');
     
     // Your API returns: { success: true, statistics: {...}, chapter_progress: [...] }
-    const stats = response.statistics || response.data || response;
+    const stats = response.data.statistics || response.data.data || response.data;
     
     return {
       total_chapters: stats.total_chapters || 0,
@@ -89,52 +68,48 @@ const ChapterService = {
    * Start a chapter (mark as started)
    */
   async startChapter(chapterId: number) {
-    return apiRequest(`/chapters/${chapterId}/start`, {
-      method: 'POST',
-    });
+    const response = await api.post(`/chapters/${chapterId}/start`);
+    return response.data;
   },
 
   /**
    * Mark chapter as completed
    */
   async completeChapter(chapterId: number) {
-    return apiRequest(`/chapters/${chapterId}/complete`, {
-      method: 'POST',
-    });
+    const response = await api.post(`/chapters/${chapterId}/complete`);
+    return response.data;
   },
 
   /**
    * Mark slide as viewed
    */
   async markSlideViewed(slideId: number) {
-    return apiRequest(`/slides/${slideId}/view`, {
-      method: 'POST',
-    });
+    const response = await api.post(`/slides/${slideId}/view`);
+    return response.data;
   },
 
   /**
    * Mark slide as completed
    */
   async markSlideCompleted(slideId: number) {
-    return apiRequest(`/slides/${slideId}/complete`, {
-      method: 'POST',
-    });
+    const response = await api.post(`/slides/${slideId}/complete`);
+    return response.data;
   },
 
   /**
    * Get next slide
    */
   async getNextSlide(slideId: number) {
-    const response = await apiRequest(`/slides/${slideId}/next`);
-    return response.data || response;
+    const response = await api.get(`/slides/${slideId}/next`);
+    return response.data.data || response.data;
   },
 
   /**
    * Get previous slide
    */
   async getPreviousSlide(slideId: number) {
-    const response = await apiRequest(`/slides/${slideId}/previous`);
-    return response.data || response;
+    const response = await api.get(`/slides/${slideId}/previous`);
+    return response.data.data || response.data;
   },
 };
 

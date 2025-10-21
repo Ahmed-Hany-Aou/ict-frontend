@@ -9,6 +9,7 @@ const api = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
+  withCredentials: true, // Recommended for Sanctum
 });
 
 // Add token to requests if available
@@ -31,10 +32,21 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid
+      console.log('401 Error Detected. Logging out.'); // For debugging
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
+      
+      // We still redirect, but we also reject the promise
+      // so the component's 'catch' block can run.
       window.location.href = '/auth';
+
+      // ----------------------------------------------
+      // 👇 ADD THIS LINE TO FIX THE BUG
+      // ----------------------------------------------
+      return Promise.reject(error); 
     }
+    
+    // For all other errors, just reject
     return Promise.reject(error);
   }
 );
