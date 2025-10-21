@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthPages from './AuthPages';
 import Dashboard from './pages/Dashboard';
 import ChapterViewer from './pages/ChapterViewer';
+import SlideViewer from './pages/SlideViewer';
 
 
 function AppRoutes() {
@@ -23,6 +24,7 @@ function AppRoutes() {
         element={isAuthenticated ? <ChapterViewer /> : <Navigate to="/auth" />} 
       />
       <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="/chapter/:id/slides" element={<SlideViewer />} />
     </Routes>
   );
 }

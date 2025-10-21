@@ -1,129 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { LogOut, BookOpen, TrendingUp, Play } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import ChapterService from '../services/chapterService';
 
 interface Chapter {
   id: number;
   title: string;
   description: string;
-  icon: string;
-  completed: boolean;
-  progress: number;
-  slidesCount: number;
-  quizCount: number;
+  chapter_number: number;
+  progress_percentage: number;
+  status: string;
+  slides_count: number;
+  completed_slides: number;
+  is_premium: boolean;
 }
 
 interface Progress {
-  totalChapters: number;
-  completedChapters: number;
-  totalSlides: number;
-  viewedSlides: number;
-  totalQuizzes: number;
-  completedQuizzes: number;
-  overallProgress: number;
+  total_chapters: number;
+  completed_chapters: number;
+  total_slides: number;
+  completed_slides: number;
+  overall_progress: number;
 }
 
-// Mock data for demonstration
-const mockChapters: Chapter[] = [
-  {
-    id: 1,
-    title: 'Introduction to ICT',
-    description: 'Learn the basics of Information and Communication Technology',
-    icon: '💻',
-    completed: false,
-    progress: 60,
-    slidesCount: 15,
-    quizCount: 3
-  },
-  {
-    id: 2,
-    title: 'Computer Hardware',
-    description: 'Understanding computer components and architecture',
-    icon: '🖥️',
-    completed: false,
-    progress: 30,
-    slidesCount: 20,
-    quizCount: 4
-  },
-  {
-    id: 3,
-    title: 'Software Fundamentals',
-    description: 'Operating systems, applications, and software types',
-    icon: '⚙️',
-    completed: true,
-    progress: 100,
-    slidesCount: 18,
-    quizCount: 5
-  },
-  {
-    id: 4,
-    title: 'Networks & Internet',
-    description: 'How computers communicate and share data',
-    icon: '🌐',
-    completed: false,
-    progress: 0,
-    slidesCount: 22,
-    quizCount: 6
-  },
-  {
-    id: 5,
-    title: 'Cybersecurity Basics',
-    description: 'Protecting data and understanding online threats',
-    icon: '🔒',
-    completed: false,
-    progress: 0,
-    slidesCount: 16,
-    quizCount: 4
-  },
-  {
-    id: 6,
-    title: 'Digital Media',
-    description: 'Working with images, audio, and video files',
-    icon: '🎨',
-    completed: false,
-    progress: 0,
-    slidesCount: 14,
-    quizCount: 3
-  }
-];
-
-const mockProgress: Progress = {
-  totalChapters: 6,
-  completedChapters: 1,
-  totalSlides: 105,
-  viewedSlides: 42,
-  totalQuizzes: 25,
-  completedQuizzes: 8,
-  overallProgress: 32
-};
-
-export default function Dashboard() {
+const Dashboard: React.FC = () => {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Mock user data
-  const user = { name: 'ana1234567', email: 'ahmed.hany.boshra.2001@gmail.com' };
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 800));
-      setChapters(mockChapters);
-      setProgress(mockProgress);
-      setLoading(false);
-    };
-    loadData();
+    loadDashboardData();
   }, []);
 
-  const handleLogout = () => {
-    alert('Logout clicked! In your app, this will call: await logout(); window.location.href = "/auth";');
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [chaptersData, progressData] = await Promise.all([
+        ChapterService.getChapters(),
+        ChapterService.getUserProgress(),
+      ]);
+
+      setChapters(chaptersData);
+      setProgress(progressData);
+    } catch (err) {
+      console.error('Error loading dashboard:', err);
+      setError('Failed to load dashboard data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-const handleChapterClick = (chapterId: number) => {
-  navigate(`/chapter/${chapterId}`);
-};
+  const handleLogout = async () => {
+    await logout();
+    navigate('/auth');
+  };
+
+  const handleChapterClick = (chapterId: number) => {
+   // navigate(`/dashboard/chapter/${chapterId}`);
+    navigate(`/chapter/${chapterId}/slides`);
+  };
 
   if (loading) {
     return (
@@ -156,6 +97,58 @@ const handleChapterClick = (chapterId: number) => {
     );
   }
 
+  if (error) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem'
+      }}>
+        <div style={{
+          background: 'white',
+          padding: '2rem',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.12)',
+          maxWidth: '500px',
+          textAlign: 'center'
+        }}>
+          <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>⚠️ Error</h2>
+          <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>{error}</p>
+          <button
+            onClick={loadDashboardData}
+            style={{
+              padding: '0.75rem 1.5rem',
+              background: '#4a90e2',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 600
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Map icon emojis based on chapter number
+  const getChapterIcon = (chapterNumber: number) => {
+    const icons: { [key: number]: string } = {
+      1: '💻',
+      2: '🖥️',
+      3: '⚙️',
+      4: '🌐',
+      5: '🔒',
+      6: '🎨',
+    };
+    return icons[chapterNumber] || '📚';
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -183,7 +176,7 @@ const handleChapterClick = (chapterId: number) => {
             📚 ICT Interactive
           </h1>
           <p style={{ color: '#6c757d', margin: 0, fontSize: '1.1rem' }}>
-            Welcome back, <strong style={{ color: '#23395d' }}>{user.name}</strong>!
+            Welcome back, <strong style={{ color: '#23395d' }}>{user?.name || 'Student'}</strong>!
           </p>
         </div>
         <button
@@ -252,7 +245,7 @@ const handleChapterClick = (chapterId: number) => {
               border: '2px solid #e0e0e0'
             }}>
               <div style={{ fontSize: '3rem', fontWeight: 700, color: '#4a90e2', marginBottom: '0.5rem' }}>
-                {progress.completedChapters}/{progress.totalChapters}
+                {progress.completed_chapters}/{progress.total_chapters}
               </div>
               <div style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 600 }}>Chapters Completed</div>
             </div>
@@ -264,9 +257,9 @@ const handleChapterClick = (chapterId: number) => {
               border: '2px solid #e0e0e0'
             }}>
               <div style={{ fontSize: '3rem', fontWeight: 700, color: '#28a745', marginBottom: '0.5rem' }}>
-                {progress.completedQuizzes}/{progress.totalQuizzes}
+                {progress.completed_slides}/{progress.total_slides}
               </div>
-              <div style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 600 }}>Quizzes Completed</div>
+              <div style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 600 }}>Slides Completed</div>
             </div>
             <div style={{ 
               textAlign: 'center', 
@@ -276,7 +269,7 @@ const handleChapterClick = (chapterId: number) => {
               border: '2px solid #e0e0e0'
             }}>
               <div style={{ fontSize: '3rem', fontWeight: 700, color: '#6f42c1', marginBottom: '0.5rem' }}>
-                {progress.overallProgress}%
+                {progress.overall_progress}%
               </div>
               <div style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 600 }}>Overall Progress</div>
             </div>
@@ -308,6 +301,7 @@ const handleChapterClick = (chapterId: number) => {
           {chapters.map(chapter => (
             <div
               key={chapter.id}
+              onClick={() => handleChapterClick(chapter.id)}
               style={{
                 background: 'white',
                 padding: '1.5rem',
@@ -331,9 +325,8 @@ const handleChapterClick = (chapterId: number) => {
                 el.style.transform = 'translateY(0)';
                 el.style.borderColor = 'transparent';
               }}
-              onClick={() => handleChapterClick(chapter.id)}
             >
-              {chapter.completed && (
+              {chapter.status === 'completed' && (
                 <div style={{
                   position: 'absolute',
                   top: '1rem',
@@ -350,7 +343,7 @@ const handleChapterClick = (chapterId: number) => {
               )}
               
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-                {chapter.icon}
+                {getChapterIcon(chapter.chapter_number)}
               </div>
               <h3 style={{ 
                 color: '#23395d', 
@@ -382,7 +375,7 @@ const handleChapterClick = (chapterId: number) => {
                   color: '#6c757d'
                 }}>
                   <span>Progress</span>
-                  <span style={{ color: '#4a90e2' }}>{chapter.progress}%</span>
+                  <span style={{ color: '#4a90e2' }}>{chapter.progress_percentage}%</span>
                 </div>
                 <div style={{
                   height: '10px',
@@ -392,7 +385,7 @@ const handleChapterClick = (chapterId: number) => {
                 }}>
                   <div style={{
                     height: '100%',
-                    width: `${chapter.progress}%`,
+                    width: `${chapter.progress_percentage}%`,
                     background: 'linear-gradient(90deg, #4a90e2, #23395d)',
                     transition: 'width 0.3s',
                     borderRadius: '5px'
@@ -410,15 +403,15 @@ const handleChapterClick = (chapterId: number) => {
                 background: '#f8f9fa',
                 borderRadius: '8px'
               }}>
-                <span style={{ fontWeight: 600 }}>📖 {chapter.slidesCount} slides</span>
-                <span style={{ fontWeight: 600 }}>❓ {chapter.quizCount} quizzes</span>
+                <span style={{ fontWeight: 600 }}>📖 {chapter.slides_count} slides</span>
+                <span style={{ fontWeight: 600 }}>✓ {chapter.completed_slides} done</span>
               </div>
 
               <button 
                 style={{
                   width: '100%',
                   padding: '0.85rem',
-                  background: chapter.progress > 0 
+                  background: chapter.progress_percentage > 0 
                     ? 'linear-gradient(135deg, #28a745, #20c997)' 
                     : 'linear-gradient(135deg, #4a90e2, #23395d)',
                   color: 'white',
@@ -436,34 +429,27 @@ const handleChapterClick = (chapterId: number) => {
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                  e.stopPropagation();
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
                   e.currentTarget.style.boxShadow = 'none';
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleChapterClick(chapter.id);
                 }}
               >
                 <Play size={18} />
-                {chapter.progress > 0 ? 'Continue Learning' : 'Start Learning'}
+                {chapter.progress_percentage > 0 ? 'Continue Learning' : 'Start Learning'}
               </button>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Footer Note */}
-      <div style={{
-        maxWidth: '1200px',
-        margin: '2rem auto 0',
-        textAlign: 'center',
-        color: '#6c757d',
-        fontSize: '0.9rem',
-        padding: '1rem',
-        background: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
-      }}>
-        💡 <strong>Note:</strong> This is a preview with mock data. Copy this code to your Dashboard.tsx file!
-      </div>
     </div>
   );
-}
+};
+
+export default Dashboard;
