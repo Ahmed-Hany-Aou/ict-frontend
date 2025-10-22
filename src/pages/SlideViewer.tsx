@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, Home, Award, ChevronDown, Loader } from 'lucide-react';
 import api from '../services/api'
 
@@ -35,12 +36,15 @@ export default function SlideViewer() {
   const [error, setError] = useState<string | null>(null);
   const [chapterCompleted, setChapterCompleted] = useState(false);
 
-  // Get chapter ID from URL or default to 1
-  const chapterId = 1; // TODO: Get from React Router params
+  // Get chapter ID from URL parameters
+  const { id } = useParams<{ id: string }>();
+  console.log('Raw id from URL:', id);
+  const chapterIdNumber = parseInt(id || '1', 10);
+  console.log('Parsed chapterIdNumber:', chapterIdNumber);
 
   useEffect(() => {
     loadChapterData();
-  }, [chapterId]);
+  }, [chapterIdNumber]);
 
 // ... inside src/pages/SlideViewer.tsx
 
@@ -51,8 +55,8 @@ export default function SlideViewer() {
 
       // Fetch chapter info and slides
       const [chapterResponse, slidesResponse] = await Promise.all([
-        api.get(`/chapters/${chapterId}`),
-        api.get(`/chapters/${chapterId}/slides`)
+        api.get(`/chapters/${chapterIdNumber}`),
+        api.get(`/chapters/${chapterIdNumber}/slides`)
       ]);
 
       console.log('Chapter Response:', chapterResponse);
@@ -153,7 +157,7 @@ export default function SlideViewer() {
       setChapterCompleted(true); 
       
       await api.post(`/slides/${currentSlide.id}/complete`);
-      const response = await api.post(`/chapters/${chapterId}/complete`);
+      const response = await api.post(`/chapters/${chapterIdNumber}/complete`);
       
       console.log('Chapter completion response:', response.data);
       
@@ -438,7 +442,7 @@ export default function SlideViewer() {
                 ) : null}
               </ul>
             </div>
-            {!chapterCompleted && (
+            {!chapterCompleted && (currentSlideIndex === slides.length - 1 || type === 'completion' || type === 'answers') && (
               <button
                 onClick={handleCompleteChapter}
                 className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-lg text-lg font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"

@@ -23,8 +23,8 @@ function AppRoutes() {
         path="/chapter/:id" 
         element={isAuthenticated ? <ChapterViewer /> : <Navigate to="/auth" />} 
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
       <Route path="/chapter/:id/slides" element={<SlideViewer />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
