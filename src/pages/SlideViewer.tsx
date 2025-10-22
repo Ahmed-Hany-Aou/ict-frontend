@@ -13,6 +13,7 @@ interface Chapter {
   title: string;
   description: string;
   chapter_number: number;
+  video_url?: string | null;
 }
 
 interface Slide {
@@ -198,6 +199,20 @@ export default function SlideViewer() {
             <h1 className="text-5xl font-bold text-gray-800 mb-4">{content.title}</h1>
             <h2 className="text-3xl font-semibold text-blue-600 mb-4">{content.subtitle}</h2>
             <p className="text-xl text-gray-600">{content.description || content.footer}</p>
+            <br></br>
+       {chapter && chapter.video_url && (
+             <div className="max-w-3xl mx-auto aspect-video rounded-lg overflow-hidden shadow-lg border">
+                <iframe
+                  className="w-full h-full"
+                  src={chapter && chapter.video_url}
+                  title="Chapter Introduction Video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            )}
+            
           </div>
         );
 
@@ -558,6 +573,8 @@ export default function SlideViewer() {
           }`}
         >
           {renderSlideContent()}
+
+
         </div>
 
         {/* Navigation */}
