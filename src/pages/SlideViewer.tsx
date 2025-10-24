@@ -30,8 +30,8 @@ export default function SlideViewer() {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [completedSlides, setCompletedSlides] = useState<Set<number>>(new Set());
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [showExplanation, setShowExplanation] = useState(false);
+  const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number | null>>({});
+  const [showExplanations, setShowExplanations] = useState<Set<number>>(new Set());
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -121,8 +121,8 @@ export default function SlideViewer() {
         newSet.add(index);
         return newSet;
       });
-      setSelectedAnswer(null);
-      setShowExplanation(false);
+      setSelectedAnswers({});
+      setShowExplanations(new Set());
       setIsTransitioning(false);
     }, 300);
   }, [currentSlideIndex, slides]);
@@ -145,9 +145,16 @@ export default function SlideViewer() {
     }
   };
 
-  const handleQuizAnswer = (optionIndex: number) => {
-    setSelectedAnswer(optionIndex);
-    setShowExplanation(true);
+  const handleQuizAnswer = (questionIndex: number, optionIndex: number) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionIndex]: optionIndex
+    }));
+    setShowExplanations(prev => {
+      const newSet = new Set(prev);
+      newSet.add(questionIndex);
+      return newSet;
+    });
   };
 
 // ... inside src/pages/SlideViewer.tsx
@@ -187,7 +194,8 @@ export default function SlideViewer() {
     const { type, content } = currentSlide;
     
     // Map 'answers' type to 'completion' for rendering
-    const slideType = type === 'answers' ? 'completion' : type;
+    //const slideType = type === 'answers' ? 'completion' : type;
+    const slideType = (type === 'answers' || type === 'completion') ? 'completion' : type;
 
     switch (slideType) {
       case 'title':
@@ -357,52 +365,57 @@ export default function SlideViewer() {
               </div>
             ) : content.questions && content.questions[0]?.q ? (
               // Multiple choice questions
-              content.questions.map((q: any, qIdx: number) => (
-                <div key={qIdx} className="mb-8">
-                  <div className="bg-blue-50 p-6 rounded-lg mb-4">
-                    <p className="text-xl text-gray-800 font-semibold">{q.q}</p>
-                  </div>
-                  <div className="space-y-3">
-                    {q.options.map((option: string, idx: number) => {
-                      const isCorrect = option === q.answer;
-                      const isSelected = selectedAnswer === idx;
-                      let bgColor = 'bg-white hover:bg-gray-50';
-                      let borderColor = 'border-gray-300';
-                      
-                      if (showExplanation) {
-                        if (isCorrect) {
-                          bgColor = 'bg-green-50';
-                          borderColor = 'border-green-500';
-                        } else if (isSelected) {
-                          bgColor = 'bg-red-50';
-                          borderColor = 'border-red-500';
-                        }
-                      }
+              content.questions.map((q: any, qIdx: number) => {
+                const questionHasExplanation = showExplanations.has(qIdx);
+                const selectedAnswerForQuestion = selectedAnswers[qIdx];
 
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => !showExplanation && handleQuizAnswer(idx)}
-                          disabled={showExplanation}
-                          className={`w-full text-left p-4 rounded-lg border-2 ${borderColor} ${bgColor} transition-all ${
-                            !showExplanation ? 'cursor-pointer' : 'cursor-default'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
-                              {String.fromCharCode(65 + idx)}
-                            </span>
-                            <span className="text-gray-800 flex-1">{option}</span>
-                            {showExplanation && isCorrect && (
-                              <CheckCircle className="text-green-500" size={24} />
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
+                return (
+                  <div key={qIdx} className="mb-8">
+                    <div className="bg-blue-50 p-6 rounded-lg mb-4">
+                      <p className="text-xl text-gray-800 font-semibold">{q.q}</p>
+                    </div>
+                    <div className="space-y-3">
+                      {q.options.map((option: string, idx: number) => {
+                        const isCorrect = option === q.answer;
+                        const isSelected = selectedAnswerForQuestion === idx;
+                        let bgColor = 'bg-white hover:bg-gray-50';
+                        let borderColor = 'border-gray-300';
+
+                        if (questionHasExplanation) {
+                          if (isCorrect) {
+                            bgColor = 'bg-green-50';
+                            borderColor = 'border-green-500';
+                          } else if (isSelected) {
+                            bgColor = 'bg-red-50';
+                            borderColor = 'border-red-500';
+                          }
+                        }
+
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => !questionHasExplanation && handleQuizAnswer(qIdx, idx)}
+                            disabled={questionHasExplanation}
+                            className={`w-full text-left p-4 rounded-lg border-2 ${borderColor} ${bgColor} transition-all ${
+                              !questionHasExplanation ? 'cursor-pointer' : 'cursor-default'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold">
+                                {String.fromCharCode(65 + idx)}
+                              </span>
+                              <span className="text-gray-800 flex-1">{option}</span>
+                              {questionHasExplanation && isCorrect && (
+                                <CheckCircle className="text-green-500" size={24} />
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <p className="text-gray-600">Quiz content format not recognized</p>
             )}
