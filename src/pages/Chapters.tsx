@@ -199,7 +199,8 @@ export default function Chapters() {
                         {chapter.status === 'completed' ? 'Review' : chapter.status === 'in_progress' ? 'Continue' : 'Start'}
                       </button>
                       <button
-                        onClick={() => navigate(`/chapter/${chapter.id}/quiz`)}
+                       // onClick={() => navigate(`/chapter/${chapter.id}/quiz`)}
+                       onClick={() => navigate(`/quizzes?chapterId=${chapter.id}`)}
                         className="bg-orange-500 text-white px-4 py-2.5 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center"
                         title="Take Quiz"
                       >

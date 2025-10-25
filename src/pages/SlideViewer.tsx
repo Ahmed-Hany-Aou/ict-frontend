@@ -635,24 +635,24 @@ const ChapterVideoSection: React.FC<{ chapter: Chapter | null }> = ({ chapter })
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 font-sans">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+      <div className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto">
               <button
                 onClick={() => window.location.href = '/dashboard'}
-                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors"
+                className="flex items-center gap-1 sm:gap-2 text-gray-600 hover:text-blue-600 transition-colors whitespace-nowrap"
               >
-                <Home size={20} />
-                <span className="font-medium">Dashboard</span>
+                <Home size={18} className="sm:w-5 sm:h-5" />
+                <span className="text-sm sm:text-base font-medium">Dashboard</span>
               </button>
-              <span className="text-gray-400">/</span>
-              <div className="flex items-center gap-2">
-                <BookOpen size={20} className="text-blue-600" />
-                <span className="font-semibold text-gray-800">{chapter?.title}</span>
+              <span className="text-gray-400 hidden sm:inline">/</span>
+              <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+                <BookOpen size={18} className="text-blue-600 flex-shrink-0 sm:w-5 sm:h-5" />
+                <span className="text-sm sm:text-base font-semibold text-gray-800 truncate">{chapter?.title}</span>
               </div>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-xs sm:text-sm text-gray-600 whitespace-nowrap">
               Slide <strong>{currentSlideIndex + 1}</strong> of <strong>{slides.length}</strong>
             </div>
           </div>
@@ -661,23 +661,23 @@ const ChapterVideoSection: React.FC<{ chapter: Chapter | null }> = ({ chapter })
 
       {/* Progress Bar */}
       <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-6 py-3">
-          <div className="flex items-center gap-4">
-            <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2 sm:py-3">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex-1 bg-gray-200 rounded-full h-2 sm:h-3 overflow-hidden">
               <div
                 className="bg-gradient-to-r from-blue-500 to-green-500 h-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-sm font-semibold text-gray-700">{progress}%</span>
+            <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">{progress}%</span>
           </div>
         </div>
       </div>
 
       {/* Slide Content */}
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-8">
         <div
-          className={`bg-white rounded-xl shadow-lg p-8 md:p-12 min-h-[500px] transition-opacity duration-300 ${
+          className={`bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8 lg:p-12 min-h-[400px] sm:min-h-[500px] transition-opacity duration-300 ${
             isTransitioning ? 'opacity-0' : 'opacity-100'
           }`}
         >
@@ -687,28 +687,29 @@ const ChapterVideoSection: React.FC<{ chapter: Chapter | null }> = ({ chapter })
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center mt-8">
+        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mt-6 sm:mt-8">
           <button
             onClick={handlePrevious}
             disabled={currentSlideIndex === 0}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-all order-2 sm:order-1 ${
               currentSlideIndex === 0
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-blue-500 text-white hover:bg-blue-600 hover:shadow-lg'
             }`}
           >
-            <ChevronLeft size={20} />
-            Previous
+            <ChevronLeft size={18} className="sm:w-5 sm:h-5" />
+            <span className="text-sm sm:text-base">Previous</span>
           </button>
 
-          <div className="flex gap-2">
+          {/* Slide Dots - Hidden on very small screens, scrollable on medium */}
+          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto py-2 justify-center order-1 sm:order-2 max-w-full">
             {slides.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => navigateToSlide(idx)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                className={`flex-shrink-0 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all duration-300 ${
                   idx === currentSlideIndex
-                    ? 'bg-blue-500 w-8'
+                    ? 'bg-blue-500 w-6 sm:w-8'
                     : completedSlides.has(idx)
                     ? 'bg-green-400'
                     : 'bg-gray-300'
@@ -721,14 +722,14 @@ const ChapterVideoSection: React.FC<{ chapter: Chapter | null }> = ({ chapter })
           <button
             onClick={handleNext}
             disabled={currentSlideIndex === slides.length - 1}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold transition-all ${
+            className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold transition-all order-3 ${
               currentSlideIndex === slides.length - 1
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 : 'bg-blue-500 text-white hover:bg-blue-600 hover:shadow-lg'
             }`}
           >
-            Next
-            <ChevronRight size={20} />
+            <span className="text-sm sm:text-base">Next</span>
+            <ChevronRight size={18} className="sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>
