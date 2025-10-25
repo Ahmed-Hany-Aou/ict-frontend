@@ -9,6 +9,7 @@ import SlideViewer from './pages/SlideViewer';
 import Quiz from './pages/Quiz';
 import Quizzes from './pages/Quizzes';
 import Results from './pages/Results';
+import QuizResultDetail from './pages/QuizResultDetail';
 import Progress from './pages/Progress';
 import Profile from './pages/Profile';
 
@@ -48,6 +49,10 @@ function AppRoutes() {
       <Route
         path="/results"
         element={isAuthenticated ? <Results /> : <Navigate to="/auth" />}
+      />
+      <Route
+        path="/results/:resultId"
+        element={isAuthenticated ? <QuizResultDetail /> : <Navigate to="/auth" />}
       />
       <Route
         path="/progress"

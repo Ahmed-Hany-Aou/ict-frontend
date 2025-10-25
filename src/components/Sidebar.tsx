@@ -38,7 +38,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     if (onLogout) {
       onLogout();
     }
-    localStorage.removeItem('token');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user');
     navigate('/login');
   };
 
