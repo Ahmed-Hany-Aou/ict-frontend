@@ -239,8 +239,9 @@ export default function Results() {
               {filteredResults.map((result) => (
                 <div
                   key={result.id}
-                  className={`bg-white rounded-lg shadow-sm border-2 p-6 hover:shadow-md transition-all ${
-                    result.passed ? 'border-green-200' : 'border-red-200'
+                  onClick={() => navigate(`/results/${result.id}`)}
+                  className={`bg-white rounded-lg shadow-sm border-2 p-6 hover:shadow-lg transition-all cursor-pointer ${
+                    result.passed ? 'border-green-200 hover:border-green-400' : 'border-red-200 hover:border-red-400'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -300,14 +301,28 @@ export default function Results() {
                     <div className="text-sm text-gray-600">
                       Passing score: {result.quiz.passing_score}%
                     </div>
-                    {!result.passed && (
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => navigate(`/quiz/${result.quiz_id}`)}
-                        className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/results/${result.id}`);
+                        }}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-semibold"
                       >
-                        Retry Quiz
+                        View Details →
                       </button>
-                    )}
+                      {!result.passed && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/quiz/${result.quiz_id}`);
+                          }}
+                          className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
+                        >
+                          Retry Quiz
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, XCircle, Award, RotateCcw, Home, Loader, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Award, RotateCcw, Home, Loader, AlertCircle, Clock } from 'lucide-react';
 import api from '../services/api';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
@@ -40,20 +40,27 @@ export default function Quiz() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [result, setResult] = useState<QuizResult | null>(null);
   const [showExplanations, setShowExplanations] = useState(false);
+  const [startTime] = useState(Date.now());
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
     fetchQuiz();
   }, [quizId]);
 
+  // Timer to track elapsed time
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      setElapsedTime(elapsed);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [startTime]);
+
   const fetchQuiz = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await api.get(`/quizzes/${quizId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await api.get(`/quizzes/${quizId}`);
 
       setQuiz(response.data.quiz);
       setLoading(false);
@@ -84,13 +91,13 @@ export default function Quiz() {
     }
 
     try {
-      const token = localStorage.getItem('token');
+      // Calculate time taken in seconds
+      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+
       const response = await api.post(`/quizzes/${quiz.id}/submit`, {
-        answers: selectedAnswers
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        answers: selectedAnswers,
+        questions: quiz.questions, // Send the shuffled questions for accurate scoring
+        time_taken: timeTaken
       });
 
       setResult(response.data.result);
@@ -102,12 +109,19 @@ export default function Quiz() {
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   const handleRetry = () => {
     setSelectedAnswers({});
     setIsSubmitted(false);
     setResult(null);
     setCurrentQuestion(0);
     setShowExplanations(false);
+    window.location.reload(); // Reload to reset timer
   };
 
   if (loading) {
@@ -290,7 +304,13 @@ export default function Quiz() {
           <div className="mt-4">
             <div className="flex justify-between text-xs sm:text-sm text-gray-600 mb-1">
               <span>Question {currentQuestion + 1} of {quiz.questions.length}</span>
-              <span>{Object.keys(selectedAnswers).length} answered</span>
+              <div className="flex items-center gap-4">
+                <span className="flex items-center gap-1">
+                  <Clock size={16} className="text-blue-600" />
+                  {formatTime(elapsedTime)}
+                </span>
+                <span>{Object.keys(selectedAnswers).length} answered</span>
+              </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5">
               <div
