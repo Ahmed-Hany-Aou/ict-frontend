@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/MAMP/htdocs/project 29/**)",
+      "Read(//c/c/MAMP/htdocs/**)",
+      "Read(//c/MAMP/htdocs/api//**)",
+      "Read(//c/MAMP/htdocs/api/**)",
+      "Read(//c/MAMP/htdocs/**)",
+      "Bash(for file in \"C:/MAMP/htdocs/project 28/ict-backend/database/migrations\"/*.php)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(done)",
+      "Bash(cat:*)",
+      "Bash(npm run build:*)",
+      "Bash(php artisan migrate:*)",
+      "Bash(php -r \"echo file_get_contents(''''C:/MAMP/htdocs/project 28/ict-backend/app/Http/Controllers/Api/ChapterController.php'''');\")",
+      "Bash(php -l:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

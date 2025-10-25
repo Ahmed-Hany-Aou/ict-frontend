@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, Home, Award, ChevronDown, Loader } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, Home, Award, ChevronDown, Loader, PlayCircle, Calendar, Video, ExternalLink } from 'lucide-react';
 import api from '../services/api'
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
@@ -14,6 +14,10 @@ interface Chapter {
   description: string;
   chapter_number: number;
   video_url?: string | null;
+  video_type?: 'none' | 'scheduled' | 'recorded';
+  meeting_link?: string | null;
+  meeting_datetime?: string | null;
+  is_upcoming?: boolean;
 }
 
 interface Slide {
@@ -157,6 +161,24 @@ export default function SlideViewer() {
     });
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft' && currentSlideIndex > 0) {
+        handlePrevious();
+      } else if (event.key === 'ArrowRight' && currentSlideIndex < slides.length - 1) {
+        handleNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [currentSlideIndex, slides.length]);
+
 // ... inside src/pages/SlideViewer.tsx
 
   const handleCompleteChapter = async () => {
@@ -187,6 +209,92 @@ export default function SlideViewer() {
     }
   };
 
+const ChapterVideoSection: React.FC<{ chapter: Chapter | null }> = ({ chapter }) => {
+  // No chapter or no video
+  if (!chapter || chapter.video_type === 'none' || !chapter.video_type) {
+    return null;
+  }
+
+  // Recorded Video
+  if (chapter.video_type === 'recorded' && chapter.video_url) {
+    return (
+      <div className="video-container mt-6 rounded-lg overflow-hidden shadow-lg">
+        <div className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2">
+          <PlayCircle size={20} />
+          <span className="font-semibold">Watch Recording</span>
+        </div>
+        <iframe
+          src={chapter.video_url}
+          className="w-full h-96"
+          allow="autoplay; fullscreen"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  // Scheduled Meeting
+  if (chapter.video_type === 'scheduled' && chapter.meeting_link && chapter.meeting_datetime) {
+    const meetingDate = new Date(chapter.meeting_datetime);
+    const isUpcoming = chapter.is_upcoming;
+
+    return (
+      <div className="meeting-container mt-6 rounded-lg overflow-hidden shadow-lg border-2 border-blue-500">
+        <div className={`flex items-center gap-2 px-4 py-3 ${
+          isUpcoming ? 'bg-green-600' : 'bg-gray-600'
+        } text-white`}>
+          <Calendar size={20} />
+          <span className="font-semibold">
+            {isUpcoming ? 'Upcoming Live Session' : 'Past Session'}
+          </span>
+        </div>
+
+        <div className="p-6 bg-white">
+          <div className="flex items-center gap-3 mb-4">
+            <Video size={24} className="text-blue-600" />
+            <div>
+              <p className="font-semibold text-lg">Google Meet Session</p>
+              <p className="text-gray-600">
+                {meetingDate.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+              <p className="text-gray-600">
+                {meetingDate.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+            </div>
+          </div>
+
+          {isUpcoming ? (
+            <a
+              href={chapter.meeting_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+            >
+              <ExternalLink size={20} />
+              Join Live Session
+            </a>
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p className="text-yellow-800">
+                📹 This session has ended. The recording will be available soon.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
 // ...
   const renderSlideContent = () => {
     if (!currentSlide) return <div>No slide data</div>;
@@ -207,20 +315,8 @@ export default function SlideViewer() {
             <h1 className="text-5xl font-bold text-gray-800 mb-4">{content.title}</h1>
             <h2 className="text-3xl font-semibold text-blue-600 mb-4">{content.subtitle}</h2>
             <p className="text-xl text-gray-600">{content.description || content.footer}</p>
-            <br></br>
-       {chapter && chapter.video_url && (
-             <div className="max-w-3xl mx-auto aspect-video rounded-lg overflow-hidden shadow-lg border">
-                <iframe
-                  className="w-full h-full"
-                  src={chapter && chapter.video_url}
-                  title="Chapter Introduction Video"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              </div>
-            )}
-            
+
+            <ChapterVideoSection chapter={chapter} />
           </div>
         );
 
