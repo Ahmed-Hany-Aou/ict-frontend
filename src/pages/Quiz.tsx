@@ -96,6 +96,7 @@ export default function Quiz() {
 
       const response = await api.post(`/quizzes/${quiz.id}/submit`, {
         answers: selectedAnswers,
+        questions: quiz.questions, // Send the shuffled questions for accurate scoring
         time_taken: timeTaken
       });
 
