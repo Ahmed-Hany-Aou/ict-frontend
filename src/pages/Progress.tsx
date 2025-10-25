@@ -1,29 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
 import {
-  BookOpen,
   TrendingUp,
-  Award,
-  Clock,
+  BookOpen,
   CheckCircle,
-  Play,
-  Loader,
+  Award,
+  Target,
   BarChart3,
-  Target
+  Loader,
+  Calendar
 } from 'lucide-react';
-
-interface Chapter {
-  id: number;
-  title: string;
-  description: string;
-  chapter_number: number;
-  progress_percentage: number;
-  status: string;
-  slides_count: number;
-  completed_slides: number;
-}
 
 interface Progress {
   total_chapters: number;
@@ -37,55 +24,42 @@ interface Progress {
   overall_progress: number;
 }
 
-export default function Dashboard() {
-  const navigate = useNavigate();
-  const [chapters, setChapters] = useState<Chapter[]>([]);
+interface ChapterProgress {
+  id: number;
+  title: string;
+  chapter_number: number;
+  progress_percentage: number;
+  completed_slides: number;
+  total_slides: number;
+  status: string;
+}
+
+export default function ProgressPage() {
   const [progress, setProgress] = useState<Progress | null>(null);
+  const [chapters, setChapters] = useState<ChapterProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadDashboardData();
+    loadProgress();
   }, []);
 
-  const loadDashboardData = async () => {
+  const loadProgress = async () => {
     try {
       setLoading(true);
-      const [chaptersResponse, progressResponse] = await Promise.all([
-        api.get('/chapters'),
-        api.get('/user/progress')
+      const [progressResponse, chaptersResponse] = await Promise.all([
+        api.get('/user/progress'),
+        api.get('/chapters')
       ]);
 
-      setChapters(chaptersResponse.data.chapters || []);
       setProgress(progressResponse.data.statistics || null);
+      setChapters(chaptersResponse.data.chapters || []);
       setError(null);
     } catch (err) {
-      console.error('Error loading dashboard:', err);
-      setError('Failed to load dashboard data');
+      console.error('Error loading progress:', err);
+      setError('Failed to load progress data');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-700 border-green-300';
-      case 'in_progress':
-        return 'bg-blue-100 text-blue-700 border-blue-300';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-300';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'Completed';
-      case 'in_progress':
-        return 'In Progress';
-      default:
-        return 'Not Started';
     }
   };
 
@@ -97,7 +71,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-center h-screen">
             <div className="text-center">
               <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
-              <p className="text-gray-600">Loading dashboard...</p>
+              <p className="text-gray-600">Loading progress...</p>
             </div>
           </div>
         </div>
@@ -114,7 +88,7 @@ export default function Dashboard() {
             <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
               <p className="text-red-600 mb-4">{error}</p>
               <button
-                onClick={loadDashboardData}
+                onClick={loadProgress}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
               >
                 Retry
@@ -134,61 +108,57 @@ export default function Dashboard() {
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-1">Track your learning progress</p>
+            <h1 className="text-3xl font-bold text-gray-900">Your Progress</h1>
+            <p className="text-gray-600 mt-1">Track your learning journey</p>
           </div>
         </div>
 
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Progress Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {/* Overall Progress */}
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <TrendingUp size={32} />
-                <span className="text-3xl font-bold">{progress?.overall_progress}%</span>
+                <span className="text-4xl font-bold">{progress?.overall_progress}%</span>
               </div>
               <h3 className="text-sm font-medium opacity-90">Overall Progress</h3>
             </div>
 
-            {/* Chapters */}
             <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <BookOpen size={32} />
-                <span className="text-3xl font-bold">{progress?.completed_chapters}/{progress?.total_chapters}</span>
+                <span className="text-4xl font-bold">{progress?.completed_chapters}/{progress?.total_chapters}</span>
               </div>
-              <h3 className="text-sm font-medium opacity-90">Chapters Completed</h3>
+              <h3 className="text-sm font-medium opacity-90">Chapters</h3>
             </div>
 
-            {/* Slides */}
             <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <CheckCircle size={32} />
-                <span className="text-3xl font-bold">{progress?.completed_slides}/{progress?.total_slides}</span>
+                <span className="text-4xl font-bold">{progress?.completed_slides}/{progress?.total_slides}</span>
               </div>
-              <h3 className="text-sm font-medium opacity-90">Slides Completed</h3>
+              <h3 className="text-sm font-medium opacity-90">Slides</h3>
             </div>
 
-            {/* Quizzes */}
             <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <Award size={32} />
-                <span className="text-3xl font-bold">{progress?.passed_quizzes}/{progress?.total_quizzes}</span>
+                <span className="text-4xl font-bold">{progress?.passed_quizzes}/{progress?.total_quizzes}</span>
               </div>
               <h3 className="text-sm font-medium opacity-90">Quizzes Passed</h3>
             </div>
           </div>
 
-          {/* Weighted Progress Bars */}
-          <div className="bg-white p-6 rounded-xl shadow mb-8">
+          {/* Progress Breakdown */}
+          <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <BarChart3 size={24} />
               Progress Breakdown
             </h2>
 
             <div className="space-y-6">
-              {/* Slides Progress (60%) */}
+              {/* Slides Progress */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
@@ -206,7 +176,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Quiz Progress (40%) */}
+              {/* Quiz Progress */}
               <div>
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
@@ -224,7 +194,7 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Overall Progress */}
+              {/* Overall */}
               <div className="pt-4 border-t">
                 <div className="flex justify-between items-center mb-2">
                   <div className="flex items-center gap-2">
@@ -243,60 +213,50 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Chapters List */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Your Chapters</h2>
+          {/* Chapter Progress */}
+          <div className="bg-white p-6 rounded-xl shadow-lg">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <BookOpen size={24} />
+              Chapter Progress
+            </h2>
 
-            {chapters.length === 0 ? (
-              <div className="text-center py-8">
-                <BookOpen size={48} className="text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">No chapters available</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {chapters.map((chapter) => (
-                  <div
-                    key={chapter.id}
-                    onClick={() => navigate(`/chapter/${chapter.id}/slides`)}
-                    className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer group"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <span className="text-2xl">
-                            {chapter.chapter_number === 1 ? '💻' : '📚'}
-                          </span>
-                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                            Chapter {chapter.chapter_number}: {chapter.title}
-                          </h3>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-3">{chapter.description}</p>
-
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                          <span>{chapter.completed_slides}/{chapter.slides_count} slides completed</span>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status)}`}>
-                            {getStatusLabel(chapter.status)}
-                          </span>
-                        </div>
-
-                        {/* Chapter Progress Bar */}
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${chapter.progress_percentage}%` }}
-                          />
-                        </div>
+            <div className="space-y-4">
+              {chapters.map((chapter) => (
+                <div key={chapter.id} className="border-2 border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        Chapter {chapter.chapter_number}: {chapter.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {chapter.completed_slides}/{chapter.total_slides} slides completed
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {chapter.progress_percentage}%
                       </div>
-
-                      <button className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-                        <Play size={16} />
-                        {chapter.status === 'completed' ? 'Review' : chapter.status === 'in_progress' ? 'Continue' : 'Start'}
-                      </button>
+                      <div className={`text-xs font-medium ${
+                        chapter.status === 'completed' ? 'text-green-600' :
+                        chapter.status === 'in_progress' ? 'text-blue-600' :
+                        'text-gray-600'
+                      }`}>
+                        {chapter.status === 'completed' ? 'Completed' :
+                         chapter.status === 'in_progress' ? 'In Progress' :
+                         'Not Started'}
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
+
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${chapter.progress_percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
