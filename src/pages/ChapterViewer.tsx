@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 
+
+
 // Type Definitions
 interface QuizQuestion {
   q: string;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, BookOpen, TrendingUp, Play } from 'lucide-react';
+import { LogOut, BookOpen, TrendingUp, Play, FileQuestion } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ChapterService from '../services/chapterService';
@@ -407,43 +407,81 @@ const Dashboard: React.FC = () => {
                 <span style={{ fontWeight: 600 }}>✓ {chapter.completed_slides} done</span>
               </div>
 
-              <button 
-                style={{
-                  width: '100%',
-                  padding: '0.85rem',
-                  background: chapter.progress_percentage > 0 
-                    ? 'linear-gradient(135deg, #28a745, #20c997)' 
-                    : 'linear-gradient(135deg, #4a90e2, #23395d)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  transition: 'all 0.3s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-                  e.stopPropagation();
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.stopPropagation();
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleChapterClick(chapter.id);
-                }}
-              >
-                <Play size={18} />
-                {chapter.progress_percentage > 0 ? 'Continue Learning' : 'Start Learning'}
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  style={{
+                    flex: 1,
+                    padding: '0.85rem',
+                    background: chapter.progress_percentage > 0
+                      ? 'linear-gradient(135deg, #28a745, #20c997)'
+                      : 'linear-gradient(135deg, #4a90e2, #23395d)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    transition: 'all 0.3s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                    e.stopPropagation();
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleChapterClick(chapter.id);
+                  }}
+                >
+                  <Play size={18} />
+                  {chapter.progress_percentage > 0 ? 'Continue' : 'Start'}
+                </button>
+
+                <button
+                  style={{
+                    flex: 1,
+                    padding: '0.85rem',
+                    background: 'linear-gradient(135deg, #f39c12, #e67e22)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: 700,
+                    fontSize: '1rem',
+                    transition: 'all 0.3s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(243, 156, 18, 0.4)';
+                    e.stopPropagation();
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.stopPropagation();
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/chapter/${chapter.id}/quiz`);
+                  }}
+                >
+                  <FileQuestion size={18} />
+                  Quiz
+                </button>
+              </div>
             </div>
           ))}
         </div>

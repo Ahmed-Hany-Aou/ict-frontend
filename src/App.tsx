@@ -5,6 +5,7 @@ import AuthPages from './AuthPages';
 import Dashboard from './pages/Dashboard';
 import ChapterViewer from './pages/ChapterViewer';
 import SlideViewer from './pages/SlideViewer';
+import Quiz from './pages/Quiz';
 
 
 function AppRoutes() {
@@ -19,11 +20,18 @@ function AppRoutes() {
           isAuthenticated ? <Dashboard /> : <Navigate to="/auth" replace />
         } 
       />
-      <Route 
-        path="/chapter/:id" 
-        element={isAuthenticated ? <ChapterViewer /> : <Navigate to="/auth" />} 
+      <Route
+        path="/chapter/:id"
+        element={isAuthenticated ? <ChapterViewer /> : <Navigate to="/auth" />}
       />
-      <Route path="/chapter/:id/slides" element={<SlideViewer />} />
+      <Route
+        path="/chapter/:id/slides"
+        element={isAuthenticated ? <SlideViewer /> : <Navigate to="/auth" />}
+      />
+      <Route
+        path="/chapter/:chapterId/quiz"
+        element={isAuthenticated ? <Quiz /> : <Navigate to="/auth" />}
+      />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
