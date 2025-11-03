@@ -40,10 +40,10 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative transform transition-all duration-300 ease-out animate-in zoom-in-95 fade-in-0">
         {showPaymentForm ? (
-          <div className="p-4">
+          <div className="p-6">
             <PaymentUploadForm
               onClose={() => {
                 setShowPaymentForm(false);
@@ -163,7 +163,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Premium Access</p>
-                  <p className="text-2xl font-bold text-gray-900">EGP 199</p>
+                  <p className="text-2xl font-bold text-gray-900">EGP 300</p>
                   <p className="text-xs text-gray-500">30 days access</p>
                 </div>
                 <Crown size={48} className="text-yellow-500" />
