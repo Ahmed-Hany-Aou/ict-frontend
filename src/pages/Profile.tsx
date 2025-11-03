@@ -11,8 +11,11 @@ import {
   Loader,
   Edit,
   Save,
-  X
+  X,
+  Crown
 } from 'lucide-react';
+import { usePremium } from '../context/PremiumContext';
+import PremiumBadge from '../components/PremiumBadge';
 
 interface UserProfile {
   id: number;
@@ -32,6 +35,7 @@ interface UserStats {
 }
 
 export default function Profile() {
+  const { isPremium, premiumExpiresAt, daysRemaining, loading: premiumLoading } = usePremium();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,7 +88,7 @@ export default function Profile() {
     });
   };
 
-  if (loading) {
+  if (loading || premiumLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
@@ -139,15 +143,37 @@ export default function Profile() {
           {/* Profile Card */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
             {/* Header with gradient */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 h-32"></div>
+            <div className={`h-32 ${isPremium ? 'bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600' : 'bg-gradient-to-r from-blue-600 to-blue-700'}`}></div>
 
             {/* Profile Info */}
             <div className="px-8 pb-8">
               <div className="flex items-start -mt-16 mb-6">
-                <div className="w-32 h-32 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center">
-                  <User size={64} className="text-blue-600" />
+                <div className="relative">
+                  <div className="w-32 h-32 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center">
+                    <User size={64} className={isPremium ? 'text-yellow-500' : 'text-blue-600'} />
+                  </div>
+                  {isPremium && (
+                    <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                      <PremiumBadge variant="crown" size="md" />
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Premium Status Banner */}
+              {isPremium && (
+                <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border-2 border-yellow-300 rounded-lg p-4 mb-6 flex items-center gap-3">
+                  <Crown size={24} className="text-yellow-600" fill="currentColor" />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-yellow-900">Premium Member</h3>
+                    <p className="text-sm text-yellow-700">
+                      {premiumExpiresAt
+                        ? `Expires on ${formatDate(premiumExpiresAt)} (${daysRemaining} days remaining)`
+                        : 'Lifetime access'}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-6">
                 {/* Name */}
@@ -206,7 +232,7 @@ export default function Profile() {
                   </div>
                 </div>
 
-                {/* Join Date */}
+                {/* Member Since */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Member Since
@@ -220,45 +246,59 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Statistics */}
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <TrendingUp size={24} />
-              Learning Statistics
-            </h2>
+          {/* Stats Card */}
+          {stats && (
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <TrendingUp className="text-blue-600" />
+                Learning Statistics
+              </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
-                <div className="flex items-center justify-between mb-3">
-                  <BookOpen className="text-purple-600" size={32} />
-                  <span className="text-3xl font-bold text-purple-600">
-                    {stats?.completed_chapters}/{stats?.total_chapters}
-                  </span>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Overall Progress */}
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-blue-700">Overall Progress</span>
+                    <Award className="text-blue-600" size={20} />
+                  </div>
+                  <p className="text-3xl font-bold text-blue-900">{stats.overall_progress}%</p>
                 </div>
-                <h3 className="text-sm font-medium text-purple-900">Chapters Completed</h3>
-              </div>
 
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl">
-                <div className="flex items-center justify-between mb-3">
-                  <Award className="text-green-600" size={32} />
-                  <span className="text-3xl font-bold text-green-600">
-                    {stats?.passed_quizzes}/{stats?.total_quizzes}
-                  </span>
+                {/* Chapters */}
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-green-700">Chapters</span>
+                    <BookOpen className="text-green-600" size={20} />
+                  </div>
+                  <p className="text-3xl font-bold text-green-900">
+                    {stats.completed_chapters}/{stats.total_chapters}
+                  </p>
                 </div>
-                <h3 className="text-sm font-medium text-green-900">Quizzes Passed</h3>
-              </div>
 
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
-                <div className="flex items-center justify-between mb-3">
-                  <TrendingUp className="text-blue-600" size={32} />
-                  <span className="text-3xl font-bold text-blue-600">
-                    {stats?.overall_progress}%
-                  </span>
+                {/* Slides */}
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-purple-700">Slides Completed</span>
+                    <BookOpen className="text-purple-600" size={20} />
+                  </div>
+                  <p className="text-3xl font-bold text-purple-900">
+                    {stats.completed_slides}/{stats.total_slides}
+                  </p>
                 </div>
-                <h3 className="text-sm font-medium text-blue-900">Overall Progress</h3>
+
+                {/* Quizzes */}
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-4 border border-orange-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-orange-700">Quizzes Passed</span>
+                    <Award className="text-orange-600" size={20} />
+                  </div>
+                  <p className="text-3xl font-bold text-orange-900">
+                    {stats.passed_quizzes}/{stats.total_quizzes}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

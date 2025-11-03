@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { PremiumProvider } from './context/PremiumContext';
 import AuthPages from './AuthPages';
 import Dashboard from './pages/Dashboard';
 import Chapters from './pages/Chapters';
@@ -20,11 +21,11 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPages />} />
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
           isAuthenticated ? <Dashboard /> : <Navigate to="/auth" replace />
-        } 
+        }
       />
       <Route
         path="/chapter/:id"
@@ -79,13 +80,12 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppRoutes />
+        <PremiumProvider>
+          <AppRoutes />
+        </PremiumProvider>
       </AuthProvider>
     </Router>
   );
 }
 
 export default App;
-
-
-

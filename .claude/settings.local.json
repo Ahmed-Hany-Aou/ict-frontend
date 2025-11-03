@@ -18,7 +18,8 @@
       "Bash(php artisan db:show:*)",
       "Bash(php -r:*)",
       "Bash(php artisan tinker:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(npm run dev)"
     ],
     "deny": [],
     "ask": []
