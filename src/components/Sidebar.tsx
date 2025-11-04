@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home,
@@ -11,8 +11,12 @@ import {
   LogOut,
   User,
   Crown,
-  Zap
+  Zap,
+  Sparkles
 } from 'lucide-react';
+import { usePremium } from '../context/PremiumContext';
+import PremiumModal from './PremiumModal';
+import PremiumService, { PricingData } from '../services/premiumService';
 
 interface SidebarProps {
   onLogout?: () => void;
@@ -22,6 +26,36 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const { isPremium, premiumExpiresAt, daysRemaining, loading: premiumLoading } = usePremium();
+  const [pricing, setPricing] = useState<PricingData | null>(null);
+
+  useEffect(() => {
+    loadPricing();
+  }, []);
+
+  const loadPricing = async () => {
+    try {
+      const response = await PremiumService.getPricing();
+      setPricing(response.data);
+    } catch (err) {
+      console.error('Error loading pricing:', err);
+      // Use fallback pricing if API fails
+      setPricing({
+        currency: 'EGP',
+        currency_symbol: 'EGP',
+        original_price: 600,
+        discounted_price: 300,
+        discount_percentage: 50,
+        duration_days: 30,
+        description: 'Get full access to all premium content for 30 days',
+        formatted: {
+          original_price: 'EGP 600',
+          discounted_price: 'EGP 300',
+        },
+      });
+    }
+  };
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -112,33 +146,58 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
           })}
         </nav>
 
-        {/* Upgrade to Premium Section */}
-        <div className="p-4 border-t border-blue-600">
-          <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Crown className="text-white" size={24} />
-              <Zap className="text-white" size={20} />
+        {/* Upgrade to Premium Section - Only show if not premium */}
+        {!isPremium && !premiumLoading && (
+          <div className="p-4 border-t border-blue-600">
+            <div
+              onClick={() => setShowPremiumModal(true)}
+              className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
+            >
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Crown className="text-white" size={24} fill="currentColor" />
+                <Zap className="text-white" size={20} />
+              </div>
+              <h3 className="text-white font-bold text-center text-lg mb-1">
+                Upgrade to Premium
+              </h3>
+              <p className="text-white text-xs text-center mb-3 opacity-90">
+                (for short time)
+              </p>
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <span className="text-white text-sm line-through opacity-75">
+                  {pricing?.formatted.original_price || 'EGP 600'}
+                </span>
+                <span className="text-white text-2xl font-extrabold">
+                  {pricing?.formatted.discounted_price || 'EGP 300'}
+                </span>
+              </div>
+              <div className="w-full bg-white text-orange-600 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2">
+                <Crown size={18} />
+                Get Premium
+              </div>
             </div>
-            <h3 className="text-white font-bold text-center text-lg mb-1">
-              Upgrade to Premium
-            </h3>
-            <p className="text-white text-xs text-center mb-3 opacity-90">
-              (for short time)
-            </p>
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <span className="text-white text-sm line-through opacity-75">
-                500 EGP
-              </span>
-              <span className="text-white text-2xl font-extrabold">
-                300 EGP
-              </span>
-            </div>
-            <button className="w-full bg-white text-orange-600 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2">
-              <Crown size={18} />
-              Get Premium
-            </button>
           </div>
-        </div>
+        )}
+
+        {/* Premium Status - Show if user is premium */}
+        {isPremium && !premiumLoading && (
+          <div className="p-4 border-t border-blue-600">
+            <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-xl p-4 shadow-lg">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Crown className="text-white" size={24} fill="currentColor" />
+                <Sparkles className="text-white" size={20} />
+              </div>
+              <h3 className="text-white font-bold text-center text-lg mb-1">
+                Premium Active
+              </h3>
+              {daysRemaining !== null && (
+                <p className="text-white text-sm text-center opacity-90">
+                  {Math.round(daysRemaining)} {Math.round(daysRemaining) === 1 ? 'day' : 'days'} remaining
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* User Section */}
         <div className="p-4 border-t border-blue-600">
@@ -159,6 +218,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
           </button>
         </div>
       </div>
+
+      {/* Premium Modal */}
+      <PremiumModal
+        isOpen={showPremiumModal}
+        onClose={() => setShowPremiumModal(false)}
+        title="Unlock Premium Access"
+        description="Get access to all premium chapters, advanced materials, and exclusive content."
+        originalPrice={pricing?.formatted.original_price || 'EGP 600'}
+        price={pricing?.formatted.discounted_price || 'EGP 300'}
+        discountPercentage={pricing?.discount_percentage || 50}
+        priceDescription={pricing?.description || '30 days access'}
+      />
     </>
   );
 };

@@ -16,6 +16,7 @@ import {
 import { usePremium } from '../context/PremiumContext';
 import PremiumBadge from '../components/PremiumBadge';
 import PremiumModal from '../components/PremiumModal';
+import PremiumService, { PricingData } from '../services/premiumService';
 
 interface Quiz {
   id: number;
@@ -64,9 +65,11 @@ export default function Quizzes() {
   const [error, setError] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedLockedQuiz, setSelectedLockedQuiz] = useState<Quiz | null>(null);
+  const [pricing, setPricing] = useState<PricingData | null>(null);
 
   useEffect(() => {
     fetchQuizzes();
+    loadPricing();
   }, []);
 
   const fetchQuizzes = async () => {
@@ -80,6 +83,29 @@ export default function Quizzes() {
       setError('Failed to load quizzes');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPricing = async () => {
+    try {
+      const response = await PremiumService.getPricing();
+      setPricing(response.data);
+    } catch (err) {
+      console.error('Error loading pricing:', err);
+      // Use fallback pricing if API fails
+      setPricing({
+        currency: 'EGP',
+        currency_symbol: 'EGP',
+        original_price: 500,
+        discounted_price: 300,
+        discount_percentage: 40,
+        duration_days: 30,
+        description: 'Get full access to all premium content for 30 days',
+        formatted: {
+          original_price: 'EGP 500',
+          discounted_price: 'EGP 300',
+        },
+      });
     }
   };
 
@@ -272,6 +298,9 @@ export default function Quizzes() {
         }}
         title={selectedLockedQuiz?.title || 'Premium Quiz'}
         description="Upgrade to premium to access this quiz and all exclusive content."
+        originalPrice={pricing?.formatted.original_price || 'EGP 500'}
+        price={pricing?.formatted.discounted_price || 'EGP 300'}
+        discountPercentage={pricing?.discount_percentage || 40}
       />
     </div>
   );

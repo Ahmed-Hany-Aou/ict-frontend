@@ -167,8 +167,8 @@ export default function Profile() {
                   <div className="flex-1">
                     <h3 className="font-bold text-yellow-900">Premium Member</h3>
                     <p className="text-sm text-yellow-700">
-                      {premiumExpiresAt
-                        ? `Expires on ${formatDate(premiumExpiresAt)} (${daysRemaining} days remaining)`
+                      {premiumExpiresAt && daysRemaining !== null
+                        ? `Expires on ${formatDate(premiumExpiresAt)} (${Math.round(daysRemaining)} ${Math.round(daysRemaining) === 1 ? 'day' : 'days'} remaining)`
                         : 'Lifetime access'}
                     </p>
                   </div>

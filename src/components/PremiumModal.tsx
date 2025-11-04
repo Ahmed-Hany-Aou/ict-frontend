@@ -11,6 +11,8 @@ interface PremiumModalProps {
   title?: string;
   description?: string;
   price?: string;
+  originalPrice?: string;
+  discountPercentage?: number;
   priceDescription?: string;
   benefitsList?: string[];
 }
@@ -30,6 +32,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
   title = 'Premium Content',
   description = 'This content is available for premium members only.',
   price = 'EGP 300', // <-- 5. Use prop
+  originalPrice,
+  discountPercentage,
   priceDescription = '30 days access', // <-- 5. Use prop
   benefitsList = defaultBenefits, // <-- 5. Use prop
 }) => {
@@ -185,8 +189,18 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600">Premium Access</p>
-                  {/* --- 5. Use prop for price --- */}
-                  <p className="text-2xl font-bold text-gray-900">{price}</p>
+                  {/* --- 5. Use prop for price with discount formatting --- */}
+                  <div className="flex items-center gap-3">
+                    {originalPrice && (
+                      <p className="text-lg text-gray-400 line-through">{originalPrice}</p>
+                    )}
+                    <p className="text-2xl font-bold text-gray-900">{price}</p>
+                    {discountPercentage && (
+                      <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                        {discountPercentage}% OFF
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500">{priceDescription}</p>
                 </div>
                 <Crown size={48} className="text-yellow-500" />
@@ -195,10 +209,23 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
 
             <button
               onClick={() => setShowPaymentForm(true)}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-4 rounded-lg font-bold text-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-[1.02] flex flex-col items-center justify-center gap-1"
             >
-              <Crown size={24} />
-              Upgrade to Premium
+              <div className="flex items-center justify-center gap-2">
+                <Crown size={24} />
+                <span>Upgrade to Premium</span>
+              </div>
+              {discountPercentage && (
+                <div className="flex items-center gap-2 text-sm font-normal">
+                  {originalPrice && (
+                    <span className="line-through opacity-75">{originalPrice}</span>
+                  )}
+                  <span className="font-bold">{price}</span>
+                  <span className="bg-yellow-400 text-blue-900 px-2 py-0.5 rounded text-xs font-bold">
+                    SAVE {discountPercentage}%
+                  </span>
+                </div>
+              )}
             </button>
 
             <p className="text-xs text-center text-gray-500 mt-4">

@@ -25,7 +25,29 @@ export interface PaymentSubmission {
   screenshot?: File;
 }
 
+export interface PricingData {
+  currency: string;
+  currency_symbol: string;
+  original_price: number;
+  discounted_price: number;
+  discount_percentage: number;
+  duration_days: number;
+  description: string;
+  formatted: {
+    original_price: string;
+    discounted_price: string;
+  };
+}
+
 const PremiumService = {
+  /**
+   * Get current pricing information
+   */
+  async getPricing(): Promise<{ success: boolean; data: PricingData }> {
+    const response = await api.get('/pricing');
+    return response.data;
+  },
+
   /**
    * Get user's premium status
    */

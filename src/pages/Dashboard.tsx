@@ -16,6 +16,7 @@ import {
   Lock
 } from 'lucide-react';
 import { usePremium } from '../context/PremiumContext';
+import PremiumService, { PricingData } from '../services/premiumService';
 
 interface Chapter {
   id: number;
@@ -26,7 +27,7 @@ interface Chapter {
   status: string;
   slides_count: number;
   completed_slides: number;
-  is_premium: boolean; 
+  is_premium: boolean;
 }
 
 interface Progress {
@@ -50,9 +51,11 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedLockedChapter, setSelectedLockedChapter] = useState<Chapter | null>(null);
+  const [pricing, setPricing] = useState<PricingData | null>(null);
 
   useEffect(() => {
     loadDashboardData();
+    loadPricing();
   }, []);
 
   const loadDashboardData = async () => {
@@ -71,6 +74,29 @@ export default function Dashboard() {
       setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPricing = async () => {
+    try {
+      const response = await PremiumService.getPricing();
+      setPricing(response.data);
+    } catch (err) {
+      console.error('Error loading pricing:', err);
+      // Use fallback pricing if API fails
+      setPricing({
+        currency: 'EGP',
+        currency_symbol: 'EGP',
+        original_price: 500,
+        discounted_price: 300,
+        discount_percentage: 40,
+        duration_days: 30,
+        description: 'Get full access to all premium content for 30 days',
+        formatted: {
+          original_price: 'EGP 500',
+          discounted_price: 'EGP 300',
+        },
+      });
     }
   };
 
@@ -320,7 +346,7 @@ export default function Dashboard() {
                        {/* Button (click handler now opens modal) */}
                         <button
                           onClick={(e) => {
-                            e.stopPropagation(); 
+                            e.stopPropagation();
                             handleChapterClick(chapter);
                           }}
                           className={`ml-4 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 self-start ${
@@ -350,7 +376,6 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-      {/* --- 4. ADD THE MODAL COMPONENT (like in Chapters.tsx) --- */}
       <PremiumModal
         isOpen={showPremiumModal}
         onClose={() => {
@@ -359,8 +384,10 @@ export default function Dashboard() {
         }}
         title={selectedLockedChapter?.title || 'Premium Content'}
         description="Upgrade to premium to access this chapter and all exclusive content."
+        originalPrice={pricing?.formatted.original_price || 'EGP 500'}
+        price={pricing?.formatted.discounted_price || 'EGP 300'}
+        discountPercentage={pricing?.discount_percentage || 40}
       />
-      {/* -------------------------------------------------------- */}
     </div>
   );
 }

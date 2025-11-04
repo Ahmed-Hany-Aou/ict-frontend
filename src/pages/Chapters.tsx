@@ -14,6 +14,7 @@ import {
 import { usePremium } from '../context/PremiumContext';
 import PremiumBadge from '../components/PremiumBadge';
 import PremiumModal from '../components/PremiumModal';
+import PremiumService, { PricingData } from '../services/premiumService';
 
 interface Chapter {
   id: number;
@@ -36,9 +37,11 @@ export default function Chapters() {
   const [error, setError] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedLockedChapter, setSelectedLockedChapter] = useState<Chapter | null>(null);
+  const [pricing, setPricing] = useState<PricingData | null>(null);
 
   useEffect(() => {
     loadChapters();
+    loadPricing();
   }, []);
 
   const loadChapters = async () => {
@@ -52,6 +55,29 @@ export default function Chapters() {
       setError('Failed to load chapters');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPricing = async () => {
+    try {
+      const response = await PremiumService.getPricing();
+      setPricing(response.data);
+    } catch (err) {
+      console.error('Error loading pricing:', err);
+      // Use fallback pricing if API fails
+      setPricing({
+        currency: 'EGP',
+        currency_symbol: 'EGP',
+        original_price: 500,
+        discounted_price: 300,
+        discount_percentage: 40,
+        duration_days: 30,
+        description: 'Get full access to all premium content for 30 days',
+        formatted: {
+          original_price: 'EGP 500',
+          discounted_price: 'EGP 300',
+        },
+      });
     }
   };
 
@@ -308,6 +334,9 @@ export default function Chapters() {
         }}
         title={selectedLockedChapter?.title || 'Premium Content'}
         description="Upgrade to premium to access this chapter and all exclusive content."
+        originalPrice={pricing?.formatted.original_price || 'EGP 500'}
+        price={pricing?.formatted.discounted_price || 'EGP 300'}
+        discountPercentage={pricing?.discount_percentage || 40}
       />
     </div>
   );
