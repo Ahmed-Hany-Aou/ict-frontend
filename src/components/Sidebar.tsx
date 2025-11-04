@@ -9,7 +9,9 @@ import {
   Menu,
   X,
   LogOut,
-  User
+  User,
+  Crown,
+  Zap
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -109,6 +111,34 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
             );
           })}
         </nav>
+
+        {/* Upgrade to Premium Section */}
+        <div className="p-4 border-t border-blue-600">
+          <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Crown className="text-white" size={24} />
+              <Zap className="text-white" size={20} />
+            </div>
+            <h3 className="text-white font-bold text-center text-lg mb-1">
+              Upgrade to Premium
+            </h3>
+            <p className="text-white text-xs text-center mb-3 opacity-90">
+              (for short time)
+            </p>
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <span className="text-white text-sm line-through opacity-75">
+                500 EGP
+              </span>
+              <span className="text-white text-2xl font-extrabold">
+                300 EGP
+              </span>
+            </div>
+            <button className="w-full bg-white text-orange-600 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2">
+              <Crown size={18} />
+              Get Premium
+            </button>
+          </div>
+        </div>
 
         {/* User Section */}
         <div className="p-4 border-t border-blue-600">
