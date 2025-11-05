@@ -13,6 +13,7 @@ import Results from './pages/Results';
 import QuizResultDetail from './pages/QuizResultDetail';
 import Progress from './pages/Progress';
 import Profile from './pages/Profile';
+import Contact from './pages/Contact';
 
 
 function AppRoutes() {
@@ -62,6 +63,10 @@ function AppRoutes() {
       <Route
         path="/profile"
         element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />}
+      />
+      <Route
+        path="/contact"
+        element={isAuthenticated ? <Contact /> : <Navigate to="/auth" />}
       />
       <Route
         path="/quiz/:quizId"

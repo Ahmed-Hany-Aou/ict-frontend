@@ -12,7 +12,8 @@ import {
   User,
   Crown,
   Zap,
-  Sparkles
+  Sparkles,
+  Mail
 } from 'lucide-react';
 import { usePremium } from '../context/PremiumContext';
 import PremiumModal from './PremiumModal';
@@ -63,6 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     { icon: ClipboardList, label: 'Quizzes', path: '/quizzes' },
     { icon: Award, label: 'Results', path: '/results' },
     { icon: BarChart3, label: 'Progress', path: '/progress' },
+    { icon: Mail, label: 'Contact', path: '/contact' },
   ];
 
   const handleNavigation = (path: string) => {
@@ -103,11 +105,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
           fixed top-0 left-0 h-full bg-gradient-to-b from-blue-700 to-blue-900 text-white
           transition-transform duration-300 ease-in-out z-40
           ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          w-64 shadow-2xl
+          w-64 shadow-2xl flex flex-col
         `}
       >
         {/* Logo/Header */}
-        <div className="p-6 border-b border-blue-600">
+        <div className="p-6 border-b border-blue-600 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
               <BookOpen className="text-blue-700" size={24} />
@@ -119,8 +121,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
           </div>
         </div>
 
+        {/* Scrollable Content Container */}
+        <div className="flex-1 overflow-y-auto">
         {/* Navigation Menu */}
-        <nav className="p-4 space-y-2 flex-1 overflow-y-auto">
+        <nav className="p-4 space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -216,6 +220,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
             <LogOut size={20} />
             <span className="font-medium">Logout</span>
           </button>
+        </div>
         </div>
       </div>
 
