@@ -8,8 +8,13 @@ import {
   CheckCircle,
   Loader,
   FileQuestion,
-  Award
+  Award,
+  Lock
 } from 'lucide-react';
+import { usePremium } from '../context/PremiumContext';
+import PremiumBadge from '../components/PremiumBadge';
+import PremiumModal from '../components/PremiumModal';
+import PremiumService, { PricingData } from '../services/premiumService';
 
 interface Chapter {
   id: number;
@@ -21,16 +26,22 @@ interface Chapter {
   slides_count: number;
   completed_slides: number;
   is_premium: boolean;
+  is_locked?: boolean;
 }
 
 export default function Chapters() {
   const navigate = useNavigate();
+  const { isPremium, loading: premiumLoading } = usePremium();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [selectedLockedChapter, setSelectedLockedChapter] = useState<Chapter | null>(null);
+  const [pricing, setPricing] = useState<PricingData | null>(null);
 
   useEffect(() => {
     loadChapters();
+    loadPricing();
   }, []);
 
   const loadChapters = async () => {
@@ -44,6 +55,51 @@ export default function Chapters() {
       setError('Failed to load chapters');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPricing = async () => {
+    try {
+      const response = await PremiumService.getPricing();
+      setPricing(response.data);
+    } catch (err) {
+      console.error('Error loading pricing:', err);
+      // Use fallback pricing if API fails
+      setPricing({
+        currency: 'EGP',
+        currency_symbol: 'EGP',
+        original_price: 500,
+        discounted_price: 300,
+        discount_percentage: 40,
+        duration_days: 30,
+        description: 'Get full access to all premium content for 30 days',
+        formatted: {
+          original_price: 'EGP 500',
+          discounted_price: 'EGP 300',
+        },
+      });
+    }
+  };
+
+  const handleChapterClick = (chapter: Chapter) => {
+    const isLocked = chapter.is_locked || (chapter.is_premium && !isPremium);
+
+    if (isLocked) {
+      setSelectedLockedChapter(chapter);
+      setShowPremiumModal(true);
+    } else {
+      navigate(`/chapter/${chapter.id}/slides`);
+    }
+  };
+
+  const handleQuizClick = (chapter: Chapter) => {
+    const isLocked = chapter.is_locked || (chapter.is_premium && !isPremium);
+
+    if (isLocked) {
+      setSelectedLockedChapter(chapter);
+      setShowPremiumModal(true);
+    } else {
+      navigate(`/quizzes?chapterId=${chapter.id}`);
     }
   };
 
@@ -69,7 +125,7 @@ export default function Chapters() {
     }
   };
 
-  if (loading) {
+  if (loading || premiumLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
@@ -129,91 +185,159 @@ export default function Chapters() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {chapters.map((chapter) => (
-                <div
-                  key={chapter.id}
-                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border-2 border-gray-100 hover:border-blue-400 overflow-hidden"
-                >
-                  {/* Header with status badge */}
-                  <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white relative">
-                    <div className="absolute top-4 right-4">
-                      {chapter.status === 'completed' && (
-                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                          <CheckCircle size={14} />
-                          DONE
+              {chapters.map((chapter) => {
+                const isLocked = chapter.is_locked || (chapter.is_premium && !isPremium);
+
+                return (
+                  <div
+                    key={chapter.id}
+                    className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border-2 overflow-hidden ${
+                      isLocked
+                        ? 'border-gray-300 opacity-90'
+                        : 'border-gray-100 hover:border-blue-400'
+                    }`}
+                  >
+                    {/* Header with status badge */}
+                    <div
+                      className={`p-6 text-white relative ${
+                        isLocked
+                          ? 'bg-gradient-to-r from-gray-500 to-gray-600'
+                          : 'bg-gradient-to-r from-blue-500 to-blue-600'
+                      }`}
+                    >
+                      <div className="absolute top-4 right-4 flex gap-2">
+                        {chapter.is_premium && <PremiumBadge variant="crown" size="sm" />}
+                        {chapter.status === 'completed' && !isLocked && (
+                          <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                            <CheckCircle size={14} />
+                            DONE
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-5xl mb-3">
+                        {isLocked ? '🔒' : chapter.chapter_number === 1 ? '💻' : '📚'}
+                      </div>
+                      <h3 className="text-xl font-bold mb-1">
+                        Chapter {chapter.chapter_number}
+                      </h3>
+                      <p className={`text-sm ${isLocked ? 'text-gray-200' : 'text-blue-100'}`}>
+                        {chapter.slides_count} slides
+                      </p>
+                    </div>
+
+                    {/* Body */}
+                    <div className="p-6">
+                      <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                        {chapter.title}
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {chapter.description}
+                      </p>
+
+                      {/* Progress */}
+                      <div className="mb-4">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs font-medium text-gray-600">Progress</span>
+                          <span className="text-xs font-bold text-blue-600">
+                            {chapter.progress_percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-500 ${
+                              isLocked ? 'bg-gray-400' : 'bg-blue-600'
+                            }`}
+                            style={{ width: `${chapter.progress_percentage}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                        <span className="flex items-center gap-1">
+                          <CheckCircle size={16} className="text-green-600" />
+                          {chapter.completed_slides} done
+                        </span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                            chapter.status
+                          )}`}
+                        >
+                          {getStatusLabel(chapter.status)}
+                        </span>
+                      </div>
+
+                      {/* Locked Message */}
+                      {isLocked && (
+                        <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+                          <Lock size={16} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-yellow-700">
+                            Premium content - Upgrade to access
+                          </p>
                         </div>
                       )}
-                    </div>
-                    <div className="text-5xl mb-3">
-                      {chapter.chapter_number === 1 ? '💻' : '📚'}
-                    </div>
-                    <h3 className="text-xl font-bold mb-1">
-                      Chapter {chapter.chapter_number}
-                    </h3>
-                    <p className="text-blue-100 text-sm">
-                      {chapter.slides_count} slides
-                    </p>
-                  </div>
 
-                  {/* Body */}
-                  <div className="p-6">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                      {chapter.title}
-                    </h4>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                      {chapter.description}
-                    </p>
-
-                    {/* Progress */}
-                    <div className="mb-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-medium text-gray-600">Progress</span>
-                        <span className="text-xs font-bold text-blue-600">{chapter.progress_percentage}%</span>
+                      {/* Actions */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleChapterClick(chapter)}
+                          className={`flex-1 px-4 py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors ${
+                            isLocked
+                              ? 'bg-gray-400 text-white cursor-pointer hover:bg-gray-500'
+                              : 'bg-blue-600 text-white hover:bg-blue-700'
+                          }`}
+                        >
+                          {isLocked ? (
+                            <>
+                              <Lock size={16} />
+                              Upgrade
+                            </>
+                          ) : (
+                            <>
+                              <Play size={16} />
+                              {chapter.status === 'completed'
+                                ? 'Review'
+                                : chapter.status === 'in_progress'
+                                ? 'Continue'
+                                : 'Start'}
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleQuizClick(chapter)}
+                          className={`px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center ${
+                            isLocked
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              : 'bg-orange-500 text-white hover:bg-orange-600'
+                          }`}
+                          title={isLocked ? 'Premium content' : 'Take Quiz'}
+                          disabled={isLocked}
+                        >
+                          <FileQuestion size={18} />
+                        </button>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${chapter.progress_percentage}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-                      <span className="flex items-center gap-1">
-                        <CheckCircle size={16} className="text-green-600" />
-                        {chapter.completed_slides} done
-                      </span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status)}`}>
-                        {getStatusLabel(chapter.status)}
-                      </span>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => navigate(`/chapter/${chapter.id}/slides`)}
-                        className="flex-1 bg-blue-600 text-white px-4 py-2.5 rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center gap-2"
-                      >
-                        <Play size={16} />
-                        {chapter.status === 'completed' ? 'Review' : chapter.status === 'in_progress' ? 'Continue' : 'Start'}
-                      </button>
-                      <button
-                       // onClick={() => navigate(`/chapter/${chapter.id}/quiz`)}
-                       onClick={() => navigate(`/quizzes?chapterId=${chapter.id}`)}
-                        className="bg-orange-500 text-white px-4 py-2.5 rounded-lg hover:bg-orange-600 transition-colors flex items-center justify-center"
-                        title="Take Quiz"
-                      >
-                        <FileQuestion size={18} />
-                      </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
       </div>
+
+      {/* Premium Modal */}
+      <PremiumModal
+        isOpen={showPremiumModal}
+        onClose={() => {
+          setShowPremiumModal(false);
+          setSelectedLockedChapter(null);
+        }}
+        title={selectedLockedChapter?.title || 'Premium Content'}
+        description="Upgrade to premium to access this chapter and all exclusive content."
+        originalPrice={pricing?.formatted.original_price || 'EGP 500'}
+        price={pricing?.formatted.discounted_price || 'EGP 300'}
+        discountPercentage={pricing?.discount_percentage || 40}
+      />
     </div>
   );
 }

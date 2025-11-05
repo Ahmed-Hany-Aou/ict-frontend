@@ -10,8 +10,13 @@ import {
   ChevronRight,
   Clock,
   CheckCircle,
-  Loader
+  Loader,
+  Lock
 } from 'lucide-react';
+import { usePremium } from '../context/PremiumContext';
+import PremiumBadge from '../components/PremiumBadge';
+import PremiumModal from '../components/PremiumModal';
+import PremiumService, { PricingData } from '../services/premiumService';
 
 interface Quiz {
   id: number;
@@ -19,6 +24,8 @@ interface Quiz {
   description: string;
   category: string;
   passing_score: number;
+  is_premium?: boolean;
+  is_locked?: boolean;
   chapter?: {
     title: string;
     chapter_number: number;
@@ -52,12 +59,17 @@ const categoryLabels = {
 
 export default function Quizzes() {
   const navigate = useNavigate();
+  const { isPremium, loading: premiumLoading } = usePremium();
   const [quizzes, setQuizzes] = useState<GroupedQuizzes>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [selectedLockedQuiz, setSelectedLockedQuiz] = useState<Quiz | null>(null);
+  const [pricing, setPricing] = useState<PricingData | null>(null);
 
   useEffect(() => {
     fetchQuizzes();
+    loadPricing();
   }, []);
 
   const fetchQuizzes = async () => {
@@ -74,11 +86,41 @@ export default function Quizzes() {
     }
   };
 
-  const startQuiz = (quizId: number) => {
-    navigate(`/quiz/${quizId}`);
+  const loadPricing = async () => {
+    try {
+      const response = await PremiumService.getPricing();
+      setPricing(response.data);
+    } catch (err) {
+      console.error('Error loading pricing:', err);
+      // Use fallback pricing if API fails
+      setPricing({
+        currency: 'EGP',
+        currency_symbol: 'EGP',
+        original_price: 500,
+        discounted_price: 300,
+        discount_percentage: 40,
+        duration_days: 30,
+        description: 'Get full access to all premium content for 30 days',
+        formatted: {
+          original_price: 'EGP 500',
+          discounted_price: 'EGP 300',
+        },
+      });
+    }
   };
 
-  if (loading) {
+  const startQuiz = (quiz: Quiz) => {
+    const isLocked = quiz.is_locked || (quiz.is_premium && !isPremium);
+
+    if (isLocked) {
+      setSelectedLockedQuiz(quiz);
+      setShowPremiumModal(true);
+    } else {
+      navigate(`/quiz/${quiz.id}`);
+    }
+  };
+
+  if (loading || premiumLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
@@ -156,47 +198,88 @@ export default function Quizzes() {
 
                     {/* Quizzes Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-white p-4 rounded-b-xl shadow">
-                      {categoryQuizzes.map((quiz) => (
-                        <div
-                          key={quiz.id}
-                          className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer group"
-                          onClick={() => startQuiz(quiz.id)}
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                              {quiz.title}
-                            </h3>
-                            <ChevronRight className="text-gray-400 group-hover:text-blue-600 transition-colors" size={20} />
-                          </div>
+                      {categoryQuizzes.map((quiz) => {
+                        const isLocked = quiz.is_locked || (quiz.is_premium && !isPremium);
 
-                          {quiz.chapter && (
-                            <p className="text-sm text-blue-600 mb-2">
-                              Chapter {quiz.chapter.chapter_number}: {quiz.chapter.title}
-                            </p>
-                          )}
-
-                          <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                            {quiz.description}
-                          </p>
-
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Target size={16} />
-                              <span>Pass: {quiz.passing_score}%</span>
-                            </div>
-                          </div>
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startQuiz(quiz.id);
-                            }}
-                            className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        return (
+                          <div
+                            key={quiz.id}
+                            className={`border-2 rounded-lg p-4 transition-all cursor-pointer group ${
+                              isLocked
+                                ? 'border-gray-300 opacity-75 hover:border-gray-400'
+                                : 'border-gray-200 hover:border-blue-400 hover:shadow-lg'
+                            }`}
+                            onClick={() => startQuiz(quiz)}
                           >
-                            Start Quiz
-                          </button>
-                        </div>
-                      ))}
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h3 className={`text-lg font-semibold transition-colors ${
+                                  isLocked ? 'text-gray-600' : 'text-gray-800 group-hover:text-blue-600'
+                                }`}>
+                                  {quiz.title}
+                                </h3>
+                                {quiz.is_premium && (
+                                  <div className="mt-1">
+                                    <PremiumBadge variant={isLocked ? "lock" : "crown"} size="sm" />
+                                  </div>
+                                )}
+                              </div>
+                              {isLocked ? (
+                                <Lock className="text-gray-400" size={20} />
+                              ) : (
+                                <ChevronRight className="text-gray-400 group-hover:text-blue-600 transition-colors" size={20} />
+                              )}
+                            </div>
+
+                            {quiz.chapter && (
+                              <p className="text-sm text-blue-600 mb-2">
+                                Chapter {quiz.chapter.chapter_number}: {quiz.chapter.title}
+                              </p>
+                            )}
+
+                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                              {quiz.description}
+                            </p>
+
+                            {isLocked && (
+                              <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-start gap-2">
+                                <Lock size={14} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                                <p className="text-xs text-yellow-700">
+                                  Premium quiz - Upgrade to access
+                                </p>
+                              </div>
+                            )}
+
+                            <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                              <div className="flex items-center gap-1">
+                                <Target size={16} />
+                                <span>Pass: {quiz.passing_score}%</span>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startQuiz(quiz);
+                              }}
+                              className={`w-full py-2 rounded-lg transition-colors font-medium ${
+                                isLocked
+                                  ? 'bg-gray-400 text-white hover:bg-gray-500'
+                                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                              }`}
+                            >
+                              {isLocked ? (
+                                <span className="flex items-center justify-center gap-2">
+                                  <Lock size={16} />
+                                  Upgrade to Access
+                                </span>
+                              ) : (
+                                'Start Quiz'
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 );
@@ -205,6 +288,20 @@ export default function Quizzes() {
           )}
         </div>
       </div>
+
+      {/* Premium Modal */}
+      <PremiumModal
+        isOpen={showPremiumModal}
+        onClose={() => {
+          setShowPremiumModal(false);
+          setSelectedLockedQuiz(null);
+        }}
+        title={selectedLockedQuiz?.title || 'Premium Quiz'}
+        description="Upgrade to premium to access this quiz and all exclusive content."
+        originalPrice={pricing?.formatted.original_price || 'EGP 500'}
+        price={pricing?.formatted.discounted_price || 'EGP 300'}
+        discountPercentage={pricing?.discount_percentage || 40}
+      />
     </div>
   );
 }

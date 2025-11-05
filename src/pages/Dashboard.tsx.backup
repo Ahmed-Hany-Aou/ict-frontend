@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, BookOpen, TrendingUp, Play, FileQuestion } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import ChapterService from '../services/chapterService';
+import Sidebar from '../components/Sidebar';
+import api from '../services/api';
+import {
+  BookOpen,
+  TrendingUp,
+  Award,
+  Clock,
+  CheckCircle,
+  Play,
+  Loader,
+  BarChart3,
+  Target
+} from 'lucide-react';
 
 interface Chapter {
   id: number;
@@ -13,7 +23,6 @@ interface Chapter {
   status: string;
   slides_count: number;
   completed_slides: number;
-  is_premium: boolean;
 }
 
 interface Progress {
@@ -21,11 +30,14 @@ interface Progress {
   completed_chapters: number;
   total_slides: number;
   completed_slides: number;
+  total_quizzes: number;
+  passed_quizzes: number;
+  slide_progress: number;
+  quiz_progress: number;
   overall_progress: number;
 }
 
-const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+export default function Dashboard() {
   const navigate = useNavigate();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [progress, setProgress] = useState<Progress | null>(null);
@@ -39,455 +51,255 @@ const Dashboard: React.FC = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      setError(null);
-
-      const [chaptersData, progressData] = await Promise.all([
-        ChapterService.getChapters(),
-        ChapterService.getUserProgress(),
+      const [chaptersResponse, progressResponse] = await Promise.all([
+        api.get('/chapters'),
+        api.get('/user/progress')
       ]);
 
-      setChapters(chaptersData);
-      setProgress(progressData);
+      setChapters(chaptersResponse.data.chapters || []);
+      setProgress(progressResponse.data.statistics || null);
+      setError(null);
     } catch (err) {
       console.error('Error loading dashboard:', err);
-      setError('Failed to load dashboard data. Please try again.');
+      setError('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/auth');
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-700 border-green-300';
+      case 'in_progress':
+        return 'bg-blue-100 text-blue-700 border-blue-300';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-300';
+    }
   };
 
-  const handleChapterClick = (chapterId: number) => {
-   // navigate(`/dashboard/chapter/${chapterId}`);
-    navigate(`/chapter/${chapterId}/slides`);
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'Completed';
+      case 'in_progress':
+        return 'In Progress';
+      default:
+        return 'Not Started';
+    }
   };
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        gap: '1rem'
-      }}>
-        <div style={{
-          width: '50px',
-          height: '50px',
-          border: '4px solid #e0e0e0',
-          borderTop: '4px solid #4a90e2',
-          borderRadius: '50%',
-          animation: 'spin 0.8s linear infinite'
-        }} />
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-        <p style={{ fontSize: '1.2rem', color: '#23395d', fontWeight: 600 }}>
-          Loading your dashboard...
-        </p>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
+              <p className="text-gray-600">Loading dashboard...</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem'
-      }}>
-        <div style={{
-          background: 'white',
-          padding: '2rem',
-          borderRadius: '12px',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.12)',
-          maxWidth: '500px',
-          textAlign: 'center'
-        }}>
-          <h2 style={{ color: '#dc3545', marginBottom: '1rem' }}>⚠️ Error</h2>
-          <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>{error}</p>
-          <button
-            onClick={loadDashboardData}
-            style={{
-              padding: '0.75rem 1.5rem',
-              background: '#4a90e2',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontWeight: 600
-            }}
-          >
-            Retry
-          </button>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 lg:ml-64">
+          <div className="flex items-center justify-center h-screen">
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
+              <p className="text-red-600 mb-4">{error}</p>
+              <button
+                onClick={loadDashboardData}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+              >
+                Retry
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
-  // Map icon emojis based on chapter number
-  const getChapterIcon = (chapterNumber: number) => {
-    const icons: { [key: number]: string } = {
-      1: '💻',
-      2: '🖥️',
-      3: '⚙️',
-      4: '🌐',
-      5: '🔒',
-      6: '🎨',
-    };
-    return icons[chapterNumber] || '📚';
-  };
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-      padding: '2rem 1rem',
-      fontFamily: "'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif"
-    }}>
-      {/* Header */}
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto',
-        background: 'white',
-        padding: '2rem',
-        borderRadius: '12px',
-        boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
-        marginBottom: '2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1rem'
-      }}>
-        <div>
-          <h1 style={{ color: '#23395d', margin: 0, marginBottom: '0.5rem', fontSize: '2rem', fontWeight: 700 }}>
-            📚 ICT Interactive
-          </h1>
-          <p style={{ color: '#6c757d', margin: 0, fontSize: '1.1rem' }}>
-            Welcome back, <strong style={{ color: '#23395d' }}>{user?.name || 'Student'}</strong>!
-          </p>
-        </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: '0.75rem 1.5rem',
-            background: 'linear-gradient(135deg, #dc3545, #c82333)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 600,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            transition: 'transform 0.3s',
-            fontSize: '1rem'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          <LogOut size={18} /> Logout
-        </button>
-      </div>
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
 
-      {/* Progress Section */}
-      {progress && (
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          background: 'white',
-          padding: '2rem',
-          borderRadius: '12px',
-          boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
-          marginBottom: '2rem',
-          borderLeft: '5px solid #4a90e2'
-        }}>
-          <h2 style={{ 
-            color: '#23395d', 
-            marginTop: 0, 
-            marginBottom: '1.5rem',
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.5rem',
-            fontSize: '1.5rem',
-            fontWeight: 700
-          }}>
-            <TrendingUp size={24} /> Your Learning Progress
-          </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: '1.5rem'
-          }}>
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '1.5rem', 
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)', 
-              borderRadius: '12px',
-              border: '2px solid #e0e0e0'
-            }}>
-              <div style={{ fontSize: '3rem', fontWeight: 700, color: '#4a90e2', marginBottom: '0.5rem' }}>
-                {progress.completed_chapters}/{progress.total_chapters}
-              </div>
-              <div style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 600 }}>Chapters Completed</div>
-            </div>
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '1.5rem', 
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)', 
-              borderRadius: '12px',
-              border: '2px solid #e0e0e0'
-            }}>
-              <div style={{ fontSize: '3rem', fontWeight: 700, color: '#28a745', marginBottom: '0.5rem' }}>
-                {progress.completed_slides}/{progress.total_slides}
-              </div>
-              <div style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 600 }}>Slides Completed</div>
-            </div>
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '1.5rem', 
-              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)', 
-              borderRadius: '12px',
-              border: '2px solid #e0e0e0'
-            }}>
-              <div style={{ fontSize: '3rem', fontWeight: 700, color: '#6f42c1', marginBottom: '0.5rem' }}>
-                {progress.overall_progress}%
-              </div>
-              <div style={{ color: '#6c757d', fontSize: '0.95rem', fontWeight: 600 }}>Overall Progress</div>
-            </div>
+      <div className="flex-1 lg:ml-64">
+        {/* Header */}
+        <div className="bg-white shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="text-gray-600 mt-1">Track your learning progress</p>
           </div>
         </div>
-      )}
 
-      {/* Chapters Section */}
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}>
-        <h2 style={{ 
-          color: '#23395d', 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '0.5rem',
-          fontSize: '1.5rem',
-          fontWeight: 700,
-          marginBottom: '1.5rem'
-        }}>
-          <BookOpen size={28} /> Available Chapters
-        </h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-          gap: '1.5rem'
-        }}>
-          {chapters.map(chapter => (
-            <div
-              key={chapter.id}
-              onClick={() => handleChapterClick(chapter.id)}
-              style={{
-                background: 'white',
-                padding: '1.5rem',
-                borderRadius: '12px',
-                boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
-                cursor: 'pointer',
-                transition: 'all 0.3s',
-                border: '2px solid transparent',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
-                el.style.transform = 'translateY(-5px)';
-                el.style.borderColor = '#4a90e2';
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.boxShadow = '0 2px 12px rgba(0, 0, 0, 0.08)';
-                el.style.transform = 'translateY(0)';
-                el.style.borderColor = 'transparent';
-              }}
-            >
-              {chapter.status === 'completed' && (
-                <div style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  background: '#28a745',
-                  color: 'white',
-                  padding: '0.3rem 0.6rem',
-                  borderRadius: '6px',
-                  fontSize: '0.75rem',
-                  fontWeight: 700
-                }}>
-                  ✓ COMPLETED
-                </div>
-              )}
-              
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-                {getChapterIcon(chapter.chapter_number)}
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Progress Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Overall Progress */}
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <TrendingUp size={32} />
+                <span className="text-3xl font-bold">{progress?.overall_progress}%</span>
               </div>
-              <h3 style={{ 
-                color: '#23395d', 
-                marginTop: 0, 
-                marginBottom: '0.5rem', 
-                fontSize: '1.25rem',
-                fontWeight: 700
-              }}>
-                {chapter.title}
-              </h3>
-              <p style={{ 
-                color: '#6c757d', 
-                fontSize: '0.95rem', 
-                margin: '0.5rem 0 1rem 0', 
-                minHeight: '3rem',
-                lineHeight: '1.5'
-              }}>
-                {chapter.description}
-              </p>
-              
-              {/* Progress Bar */}
-              <div style={{ margin: '1rem 0' }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: '0.5rem',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  color: '#6c757d'
-                }}>
-                  <span>Progress</span>
-                  <span style={{ color: '#4a90e2' }}>{chapter.progress_percentage}%</span>
+              <h3 className="text-sm font-medium opacity-90">Overall Progress</h3>
+            </div>
+
+            {/* Chapters */}
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <BookOpen size={32} />
+                <span className="text-3xl font-bold">{progress?.completed_chapters}/{progress?.total_chapters}</span>
+              </div>
+              <h3 className="text-sm font-medium opacity-90">Chapters Completed</h3>
+            </div>
+
+            {/* Slides */}
+            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <CheckCircle size={32} />
+                <span className="text-3xl font-bold">{progress?.completed_slides}/{progress?.total_slides}</span>
+              </div>
+              <h3 className="text-sm font-medium opacity-90">Slides Completed</h3>
+            </div>
+
+            {/* Quizzes */}
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <Award size={32} />
+                <span className="text-3xl font-bold">{progress?.passed_quizzes}/{progress?.total_quizzes}</span>
+              </div>
+              <h3 className="text-sm font-medium opacity-90">Quizzes Passed</h3>
+            </div>
+          </div>
+
+          {/* Weighted Progress Bars */}
+          <div className="bg-white p-6 rounded-xl shadow mb-8">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <BarChart3 size={24} />
+              Progress Breakdown
+            </h2>
+
+            <div className="space-y-6">
+              {/* Slides Progress (60%) */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={18} className="text-green-600" />
+                    <span className="font-medium text-gray-700">Slides Progress</span>
+                    <span className="text-sm text-gray-500">(60% weight)</span>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">{progress?.slide_progress}%</span>
                 </div>
-                <div style={{
-                  height: '10px',
-                  background: '#e0e0e0',
-                  borderRadius: '5px',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${chapter.progress_percentage}%`,
-                    background: 'linear-gradient(90deg, #4a90e2, #23395d)',
-                    transition: 'width 0.3s',
-                    borderRadius: '5px'
-                  }} />
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div
+                    className="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${progress?.slide_progress}%` }}
+                  />
                 </div>
               </div>
 
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                color: '#6c757d', 
-                fontSize: '0.9rem',
-                marginBottom: '1rem',
-                padding: '0.75rem',
-                background: '#f8f9fa',
-                borderRadius: '8px'
-              }}>
-                <span style={{ fontWeight: 600 }}>📖 {chapter.slides_count} slides</span>
-                <span style={{ fontWeight: 600 }}>✓ {chapter.completed_slides} done</span>
+              {/* Quiz Progress (40%) */}
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <Target size={18} className="text-orange-600" />
+                    <span className="font-medium text-gray-700">Quiz Progress</span>
+                    <span className="text-sm text-gray-500">(40% weight)</span>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">{progress?.quiz_progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div
+                    className="bg-gradient-to-r from-orange-400 to-orange-600 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${progress?.quiz_progress}%` }}
+                  />
+                </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  style={{
-                    flex: 1,
-                    padding: '0.85rem',
-                    background: chapter.progress_percentage > 0
-                      ? 'linear-gradient(135deg, #28a745, #20c997)'
-                      : 'linear-gradient(135deg, #4a90e2, #23395d)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    transition: 'all 0.3s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-                    e.stopPropagation();
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.stopPropagation();
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleChapterClick(chapter.id);
-                  }}
-                >
-                  <Play size={18} />
-                  {chapter.progress_percentage > 0 ? 'Continue' : 'Start'}
-                </button>
-
-                <button
-                  style={{
-                    flex: 1,
-                    padding: '0.85rem',
-                    background: 'linear-gradient(135deg, #f39c12, #e67e22)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    fontSize: '1rem',
-                    transition: 'all 0.3s',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(243, 156, 18, 0.4)';
-                    e.stopPropagation();
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.stopPropagation();
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/chapter/${chapter.id}/quiz`);
-                  }}
-                >
-                  <FileQuestion size={18} />
-                  Quiz
-                </button>
+              {/* Overall Progress */}
+              <div className="pt-4 border-t">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp size={18} className="text-blue-600" />
+                    <span className="font-bold text-gray-900">Overall Progress</span>
+                  </div>
+                  <span className="text-lg font-bold text-blue-600">{progress?.overall_progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-4">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-blue-600 h-4 rounded-full transition-all duration-500"
+                    style={{ width: `${progress?.overall_progress}%` }}
+                  />
+                </div>
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Chapters List */}
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Your Chapters</h2>
+
+            {chapters.length === 0 ? (
+              <div className="text-center py-8">
+                <BookOpen size={48} className="text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500">No chapters available</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {chapters.map((chapter) => (
+                  <div
+                    key={chapter.id}
+                    onClick={() => navigate(`/chapter/${chapter.id}/slides`)}
+                    className="border-2 border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-lg transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <span className="text-2xl">
+                            {chapter.chapter_number === 1 ? '💻' : '📚'}
+                          </span>
+                          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                            Chapter {chapter.chapter_number}: {chapter.title}
+                          </h3>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-3">{chapter.description}</p>
+
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
+                          <span>{chapter.completed_slides}/{chapter.slides_count} slides completed</span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status)}`}>
+                            {getStatusLabel(chapter.status)}
+                          </span>
+                        </div>
+
+                        {/* Chapter Progress Bar */}
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                            style={{ width: `${chapter.progress_percentage}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <button className="ml-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                        <Play size={16} />
+                        {chapter.status === 'completed' ? 'Review' : chapter.status === 'in_progress' ? 'Continue' : 'Start'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}
