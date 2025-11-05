@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, Home, Award, ChevronDown, Loader, PlayCircle, Calendar, Video, ExternalLink } from 'lucide-react';
 import api from '../services/api'
+//import { Calendar, Video, ExternalLink } from 'lucide-react';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
@@ -235,65 +236,119 @@ const ChapterVideoSection: React.FC<{ chapter: Chapter | null }> = ({ chapter })
 
   // Scheduled Meeting
   if (chapter.video_type === 'scheduled' && chapter.meeting_link && chapter.meeting_datetime) {
-    const meetingDate = new Date(chapter.meeting_datetime);
-    const isUpcoming = chapter.is_upcoming;
+  // --- NEW 3-STATE LOGIC ---
+  
+  // 1. Get all the dates
+  const meetingDate = new Date(chapter.meeting_datetime);
+  const now = new Date();
+  
+  // 2. Define the "live" window (1 hour, as you requested)
+  const liveDuration = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
+  const meetingEndTime = new Date(meetingDate.getTime() + liveDuration);
 
-    return (
-      <div className="meeting-container mt-6 rounded-lg overflow-hidden shadow-lg border-2 border-blue-500">
-        <div className={`flex items-center gap-2 px-4 py-3 ${
-          isUpcoming ? 'bg-green-600' : 'bg-gray-600'
-        } text-white`}>
-          <Calendar size={20} />
-          <span className="font-semibold">
-            {isUpcoming ? 'Upcoming Live Session' : 'Past Session'}
-          </span>
-        </div>
+  // 3. Determine the current state
+  const isUpcoming = now < meetingDate;
+  const isLive = now >= meetingDate && now < meetingEndTime;
+  const isPast = now >= meetingEndTime; // "Expired"
+  // -------------------------
 
-        <div className="p-6 bg-white">
-          <div className="flex items-center gap-3 mb-4">
-            <Video size={24} className="text-blue-600" />
-            <div>
-              <p className="font-semibold text-lg">Google Meet Session</p>
-              <p className="text-gray-600">
-                {meetingDate.toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </p>
-              <p className="text-gray-600">
-                {meetingDate.toLocaleTimeString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
-            </div>
-          </div>
-
-          {isUpcoming ? (
-            <a
-              href={chapter.meeting_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-            >
-              <ExternalLink size={20} />
-              Join Live Session
-            </a>
-          ) : (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-yellow-800">
-                📹 This session has ended. The recording will be available soon.
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-    );
+  // Determine dynamic styles based on state
+  let borderColor = 'border-gray-400';
+  let headerBg = 'bg-gray-600';
+  
+  if (isUpcoming) {
+    borderColor = 'border-green-500';
+    headerBg = 'bg-green-600';
+  } else if (isLive) {
+    borderColor = 'border-red-500';
+    headerBg = 'bg-red-600';
   }
 
-  return null;
+  return (
+    <div className={`meeting-container mt-6 rounded-lg overflow-hidden shadow-lg border-2 ${borderColor}`}>
+      
+      {/* 1. DYNAMIC HEADER */}
+      <div className={`flex items-center gap-2 px-4 py-3 ${headerBg} text-white`}>
+        {isLive && (
+          // The "red point" you requested, with a pulse
+          <span className="flex h-3 w-3 relative">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+          </span>
+        )}
+        <Calendar size={isLive ? 0 : 20} className={isLive ? 'w-0' : ''} /> {/* Hide calendar if live */}
+        
+        <span className="font-semibold">
+          {isLive ? 'Session is LIVE' : isUpcoming ? 'Upcoming Live Session' : 'Past Session'}
+        </span>
+      </div>
+
+      {/* 2. MEETING INFO (Unchanged) */}
+      <div className="p-6 bg-white">
+        <div className="flex items-center gap-3 mb-4">
+          <Video size={24} className="text-blue-600" />
+          <div>
+            <p className="font-semibold text-lg">Google Meet Session</p>
+            <p className="text-gray-600">
+              {/* This correctly shows the date in the user's local timezone */}
+              {meetingDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
+            <p className="text-gray-600">
+              {/* This correctly shows the time in the user's local timezone */}
+              {meetingDate.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
+          </div>
+        </div>
+
+        {/* 3. DYNAMIC ACTION BUTTON */}
+        
+        {/* State 1: Upcoming */}
+        {isUpcoming && (
+          <a
+            href={chapter.meeting_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            <ExternalLink size={20} />
+            Join Live Session
+          </a>
+        )}
+        
+        {/* State 2: Live */}
+        {isLive && (
+          <a
+            href={chapter.meeting_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors animate-pulse"
+          >
+            <ExternalLink size={20} />
+            Join LIVE Now
+          </a>
+        )}
+        
+        {/* State 3: Past (Expired) */}
+        {isPast && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-yellow-800">
+              📹 This session has ended. The recording will be available soon.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+return null;
 };
 // ...
   const renderSlideContent = () => {

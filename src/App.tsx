@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { PremiumProvider } from './context/PremiumContext';
 import AuthPages from './AuthPages';
 import Dashboard from './pages/Dashboard';
 import Chapters from './pages/Chapters';
@@ -12,6 +13,7 @@ import Results from './pages/Results';
 import QuizResultDetail from './pages/QuizResultDetail';
 import Progress from './pages/Progress';
 import Profile from './pages/Profile';
+import Contact from './pages/Contact';
 
 
 function AppRoutes() {
@@ -20,11 +22,11 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={<AuthPages />} />
-      <Route 
-        path="/" 
+      <Route
+        path="/"
         element={
           isAuthenticated ? <Dashboard /> : <Navigate to="/auth" replace />
-        } 
+        }
       />
       <Route
         path="/chapter/:id"
@@ -63,6 +65,10 @@ function AppRoutes() {
         element={isAuthenticated ? <Profile /> : <Navigate to="/auth" />}
       />
       <Route
+        path="/contact"
+        element={isAuthenticated ? <Contact /> : <Navigate to="/auth" />}
+      />
+      <Route
         path="/quiz/:quizId"
         element={isAuthenticated ? <Quiz /> : <Navigate to="/auth" />}
       />
@@ -79,13 +85,12 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <AppRoutes />
+        <PremiumProvider>
+          <AppRoutes />
+        </PremiumProvider>
       </AuthProvider>
     </Router>
   );
 }
 
 export default App;
-
-
-
