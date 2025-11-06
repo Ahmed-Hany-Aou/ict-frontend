@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Download, Upload } from 'lucide-react';
 
 const InstallButton: React.FC = () => {
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
-  const [currentUrl, setCurrentUrl] = useState<string>('');
+  const [isStandalone, setIsStandalone] = useState<boolean>(false);
+  const [isIos, setIsIos] = useState<boolean>(false);
+  const [isAndroid, setIsAndroid] = useState<boolean>(false);
 
   useEffect(() => {
-    // Get current URL for opening the app
-    setCurrentUrl(window.location.href);
+    // Detect platform
+    const userAgent = navigator.userAgent.toLowerCase();
+    setIsIos(/iphone|ipad|ipod/.test(userAgent));
+    setIsAndroid(/android/.test(userAgent));
 
     const checkInstallStatus = () => {
-      // Multiple ways to detect if app is installed
-      const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
-      const hasReferrer = document.referrer.includes('android-app://') || document.referrer.includes('ios-app://');
-      
-      setIsInstalled(isInStandaloneMode || hasReferrer);
+      const standalone = window.matchMedia('(display-mode: standalone)').matches;
+      setIsStandalone(standalone);
+
+      const wasInstalled = localStorage.getItem('pwa_installed') === 'true';
+      setIsInstalled(wasInstalled);
     };
 
-    // Check initial status
     checkInstallStatus();
 
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -27,108 +30,105 @@ const InstallButton: React.FC = () => {
     };
 
     const handleAppInstalled = () => {
-      console.log('App was installed');
+      localStorage.setItem('pwa_installed', 'true');
       setIsInstalled(true);
       setInstallPrompt(null);
-      // Store in localStorage for future reference
-      localStorage.setItem('pwa_installed', 'true');
-    };
-
-    // Check URL parameters for install detection
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('installed') === 'true') {
-      setIsInstalled(true);
-    }
-
-    // Check localStorage
-    if (localStorage.getItem('pwa_installed') === 'true') {
-      setIsInstalled(true);
-    }
-
-    // Listen for visibility changes (user might have installed the app)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        setTimeout(checkInstallStatus, 1000);
-      }
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Periodic check for install status
-    const interval = setInterval(checkInstallStatus, 5000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      clearInterval(interval);
     };
   }, []);
 
-  const handleInstallClick = async (): Promise<void> => {
-    if (isInstalled) {
-      // Open the current page in the installed app
-      window.location.href = currentUrl;
-      return;
-    }
+  // SIMPLIFIED: Clear single action for each button
+  const handleOpenInApp = () => {
+    // For installed apps, just navigate to the same URL - should open in PWA
+    window.location.href = window.location.origin;
+  };
 
-    if (!installPrompt) {
-      window.open('/install', '_blank');
-      return;
-    }
-
+  const handleInstallPrompt = async () => {
+    if (!installPrompt) return;
+    
     try {
       (installPrompt as any).prompt();
       const { outcome } = await (installPrompt as any).userChoice;
       
       if (outcome === 'accepted') {
-        console.log('User installed the PWA');
         localStorage.setItem('pwa_installed', 'true');
         setIsInstalled(true);
       }
     } catch (error) {
       console.error('Install failed:', error);
-      window.open('/install', '_blank');
     }
     
     setInstallPrompt(null);
   };
 
-  const handleOpenInApp = () => {
-    // Force open in the installed app
-    window.location.href = currentUrl;
+  const handleIosInstructions = () => {
+    window.open('/install', '_blank');
   };
 
-  // If app is installed, show "Open in App" button
-  if (isInstalled) {
-    return (
-      <button 
-        onClick={handleOpenInApp}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-      >
-        <ExternalLink size={20} />
-        <span className="font-medium">Open in App</span>
-      </button>
-    );
-  }
+  // CLEAN LOGIC: One clear path for each scenario
+  const getButtonState = () => {
+    // 1. If we're IN the app, show nothing
+    if (isStandalone) return 'none';
+    
+    // 2. If install prompt available (Android/Desktop Chrome), show install
+    if (installPrompt) return 'install';
+    
+    // 3. If app is already installed, show "Open in App"
+    if (isInstalled) return 'open';
+    
+    // 4. If iOS (no install prompt), show iOS instructions
+    if (isIos) return 'ios';
+    
+    // 5. Default: show nothing (or could show generic instructions)
+    return 'none';
+  };
 
-  // If install prompt is available, show install button
-  if (installPrompt) {
-    return (
-      <button 
-        onClick={handleInstallClick}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-      >
-        <span className="text-lg">📲</span>
-        <span className="font-medium">Install App</span>
-      </button>
-    );
-  }
+  const buttonState = getButtonState();
 
-  // If no prompt and not installed, don't show anything (Install Instructions will handle it)
-  return null;
+  // Don't show anything in the installed app
+  if (buttonState === 'none') return null;
+
+  // Render the appropriate button
+  return (
+    <div className="w-full">
+      {buttonState === 'open' && (
+        <button 
+          onClick={handleOpenInApp}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          <ExternalLink size={20} />
+          <span className="font-medium">Open in App</span>
+        </button>
+      )}
+      
+      {buttonState === 'install' && (
+        <button 
+          onClick={handleInstallPrompt}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          <Download size={20} />
+          <span className="font-medium">Install App</span>
+        </button>
+      )}
+      
+      {buttonState === 'ios' && (
+        <button 
+          onClick={handleIosInstructions}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          <Upload size={20} />
+          <span className="font-medium">Add to Home Screen</span>
+        </button>
+      )}
+    </div>
+  );
 };
 
 export default InstallButton;
