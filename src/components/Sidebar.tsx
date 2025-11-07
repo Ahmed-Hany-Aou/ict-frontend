@@ -31,12 +31,32 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const { isPremium, premiumExpiresAt, daysRemaining, loading: premiumLoading } = usePremium();
   const [pricing, setPricing] = useState<PricingData | null>(null);
 
   useEffect(() => {
     loadPricing();
+
+    // Check if running in standalone mode (PWA installed and running)
+    const checkStandalone = () => {
+      const standalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true ||
+        document.referrer.includes('android-app://');
+      setIsStandalone(standalone);
+    };
+
+    checkStandalone();
+
+    // Listen for display mode changes
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleChange = () => checkStandalone();
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
   }, []);
 
   const loadPricing = async () => {
@@ -155,15 +175,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
           </nav>
 
           {/* Install App Section */}
-          {/* Install App Section */}
 <div className="p-4 border-t border-blue-600">
   <h3 className="text-blue-200 text-sm font-semibold mb-3 uppercase tracking-wider">
     Mobile App
   </h3>
   <div className="space-y-2">
-    {/* Smart Button - Shows "Install App" or "Open in App" or nothing */}
+    {/* Smart Install Button - Shows platform-specific install action */}
     <InstallButton />
-    
+
     {/* Always Available - Detailed Instructions */}
     <button
       onClick={() => window.open('/install', '_blank')}
@@ -171,7 +190,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     >
       <Smartphone size={20} />
       <span className="font-medium">
-        {isInstalled ? 'App Instructions' : 'Install Instructions'}
+        {isStandalone ? 'App Instructions' : 'Install Instructions'}
       </span>
     </button>
   </div>
