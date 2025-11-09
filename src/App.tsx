@@ -14,6 +14,7 @@ import QuizResultDetail from './pages/QuizResultDetail';
 import Progress from './pages/Progress';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
+import InstallGuide from './pages/InstallGuide';
 
 
 function AppRoutes() {
@@ -21,6 +22,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+  <Route path="/install" element={<InstallGuide />} />
       <Route path="/auth" element={<AuthPages />} />
       <Route
         path="/"

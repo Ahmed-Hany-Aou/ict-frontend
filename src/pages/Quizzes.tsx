@@ -26,6 +26,8 @@ interface Quiz {
   passing_score: number;
   is_premium?: boolean;
   is_locked?: boolean;
+  publish_at?: string | null;
+  is_scheduled?: boolean;
   chapter?: {
     title: string;
     chapter_number: number;
@@ -200,31 +202,46 @@ export default function Quizzes() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-white p-4 rounded-b-xl shadow">
                       {categoryQuizzes.map((quiz) => {
                         const isLocked = quiz.is_locked || (quiz.is_premium && !isPremium);
+                        const isScheduled = quiz.is_scheduled || false;
 
                         return (
                           <div
                             key={quiz.id}
-                            className={`border-2 rounded-lg p-4 transition-all cursor-pointer group ${
-                              isLocked
-                                ? 'border-gray-300 opacity-75 hover:border-gray-400'
-                                : 'border-gray-200 hover:border-blue-400 hover:shadow-lg'
+                            className={`border-2 rounded-lg p-4 transition-all group ${
+                              isScheduled
+                                ? 'border-orange-300 opacity-75 cursor-not-allowed'
+                                : isLocked
+                                ? 'border-gray-300 opacity-75 hover:border-gray-400 cursor-pointer'
+                                : 'border-gray-200 hover:border-blue-400 hover:shadow-lg cursor-pointer'
                             }`}
-                            onClick={() => startQuiz(quiz)}
+                            onClick={() => !isScheduled && startQuiz(quiz)}
                           >
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex-1">
                                 <h3 className={`text-lg font-semibold transition-colors ${
-                                  isLocked ? 'text-gray-600' : 'text-gray-800 group-hover:text-blue-600'
+                                  isScheduled ? 'text-orange-600' : isLocked ? 'text-gray-600' : 'text-gray-800 group-hover:text-blue-600'
                                 }`}>
                                   {quiz.title}
                                 </h3>
-                                {quiz.is_premium && (
-                                  <div className="mt-1">
+                                <div className="mt-1 flex gap-2">
+                                  {quiz.is_premium && (
                                     <PremiumBadge variant={isLocked ? "lock" : "crown"} size="sm" />
-                                  </div>
-                                )}
+                                  )}
+                                  {isScheduled && (
+                                    <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-1 rounded-full">
+                                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                      </svg>
+                                      Coming Soon
+                                    </span>
+                                  )}
+                                </div>
                               </div>
-                              {isLocked ? (
+                              {isScheduled ? (
+                                <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              ) : isLocked ? (
                                 <Lock className="text-gray-400" size={20} />
                               ) : (
                                 <ChevronRight className="text-gray-400 group-hover:text-blue-600 transition-colors" size={20} />
@@ -241,7 +258,18 @@ export default function Quizzes() {
                               {quiz.description}
                             </p>
 
-                            {isLocked && (
+                            {isScheduled && (
+                              <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-2 flex items-start gap-2">
+                                <svg className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p className="text-xs text-orange-700">
+                                  This quiz will be available on {new Date(quiz.publish_at || '').toLocaleDateString()}
+                                </p>
+                              </div>
+                            )}
+
+                            {isLocked && !isScheduled && (
                               <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-2 flex items-start gap-2">
                                 <Lock size={14} className="text-yellow-600 flex-shrink-0 mt-0.5" />
                                 <p className="text-xs text-yellow-700">
@@ -260,15 +288,25 @@ export default function Quizzes() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                startQuiz(quiz);
+                                if (!isScheduled) startQuiz(quiz);
                               }}
                               className={`w-full py-2 rounded-lg transition-colors font-medium ${
-                                isLocked
+                                isScheduled
+                                  ? 'bg-orange-400 text-white cursor-not-allowed'
+                                  : isLocked
                                   ? 'bg-gray-400 text-white hover:bg-gray-500'
                                   : 'bg-blue-600 text-white hover:bg-blue-700'
                               }`}
+                              disabled={isScheduled}
                             >
-                              {isLocked ? (
+                              {isScheduled ? (
+                                <span className="flex items-center justify-center gap-2">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                  </svg>
+                                  Coming Soon
+                                </span>
+                              ) : isLocked ? (
                                 <span className="flex items-center justify-center gap-2">
                                   <Lock size={16} />
                                   Upgrade to Access
