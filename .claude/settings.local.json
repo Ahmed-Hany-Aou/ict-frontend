@@ -22,7 +22,11 @@
       "Bash(npm run dev)",
       "Bash(lsof:*)",
       "Bash(mysql:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(curl:*)",
+      "Bash(php test_chapters.php:*)",
+      "Bash(find:*)",
+      "Bash(php test_api.php:*)"
     ],
     "deny": [],
     "ask": []
