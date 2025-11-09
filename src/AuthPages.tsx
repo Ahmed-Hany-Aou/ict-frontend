@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, BookOpen, CheckCircle, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, BookOpen, CheckCircle, ArrowLeft, AlertCircle, X } from 'lucide-react';
 import { useAuth } from './context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import AuthService from './services/authService';
+
+interface AuthResponse {
+  success: boolean;
+  message: string;
+  access_token?: string;
+  token_type?: string;
+  user?: {
+    id: number;
+    email: string;
+    name: string;
+  };
+  errors?: Record<string, string[]>;
+}
 
 type FormData = {
   fullName: string;
@@ -18,8 +31,6 @@ type AuthPage = 'login' | 'register' | 'forgot';
 export default function AuthPages() {
   const { setUser } = useAuth();  // Get setUser function
   const navigate = useNavigate();  // Get navigate function
-  
-  const [isLogin, setIsLogin] = useState(true);
 
   const [currentPage, setCurrentPage] = useState<AuthPage>('login');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -35,6 +46,8 @@ export default function AuthPages() {
   const [success, setSuccess] = useState<boolean>(false);
   const [forgotEmail, setForgotEmail] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [globalError, setGlobalError] = useState<string>('');
+  const [showSuccessBanner, setShowSuccessBanner] = useState<boolean>(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -45,6 +58,11 @@ export default function AuthPages() {
 
     if ((errors as any)[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+
+    // Clear global error when user starts typing
+    if (globalError) {
+      setGlobalError('');
     }
   };
 
@@ -91,10 +109,12 @@ export default function AuthPages() {
   const toggleAuth = (page: AuthPage) => {
     setCurrentPage(page);
     setErrors({});
+    setGlobalError('');
     setShowPassword(false);
     setLoading(false);
     setSuccess(false);
     setSuccessMessage('');
+    setShowSuccessBanner(false);
     setForgotEmail('');
     setFormData({
       fullName: '',
@@ -115,9 +135,10 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   }
 
   setLoading(true);
+  setGlobalError(''); // Clear any previous errors
 
   try {
-    let response;
+    let response: AuthResponse;
 
     if (currentPage === 'login') {
       response = await AuthService.login({
@@ -134,36 +155,60 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     }
 
     if (response.success) {
-      // ✅ CRITICAL: Update the user in context
-      if (response.user) {
-        setUser(response.user);
-      }
-
+      // Set success message
       setSuccessMessage(
-        currentPage === 'login' ? 'Welcome Back!' : 'Account Created Successfully!'
+        response.message || (currentPage === 'login' ? 'Welcome Back!' : 'Account Created Successfully!')
       );
       setSuccess(true);
 
       setTimeout(() => {
         setSuccess(false);
-        navigate('/'); // Navigate to dashboard
-        // ❌ REMOVED: window.location.href = '/';
-      }, 2000);
+
+        if (currentPage === 'login') {
+          // Login: Update user in context and navigate to dashboard
+          if (response.user) {
+            setUser(response.user);
+          }
+          navigate('/');
+        } else {
+          // Register: Redirect to login page and show success message
+          setCurrentPage('login');
+          setShowSuccessBanner(true);
+          setFormData({
+            fullName: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            rememberMe: false,
+          });
+          // Clear success banner after 5 seconds
+          setTimeout(() => {
+            setShowSuccessBanner(false);
+          }, 5000);
+        }
+      }, 3500);
     } else {
-      // Handle errors from backend
+      // Handle errors from backend - display friendly messages
       if (response.errors) {
         const newErrors: Errors = {};
         for (const [field, messages] of Object.entries(response.errors)) {
           newErrors[field as keyof FormData] = (messages as string[])[0];
         }
         setErrors(newErrors);
+        // Set global error for display at top
+        if (response.message) {
+          setGlobalError(response.message);
+        }
+      } else if (response.message) {
+        // Display the friendly error message from backend
+        setGlobalError(response.message);
       } else {
-        setErrors({ email: response.message || 'Authentication failed' });
+        setGlobalError('Authentication failed. Please try again.');
       }
     }
   } catch (error) {
     console.error('Auth error:', error);
-    setErrors({ email: 'Connection error. Is the backend running?' });
+    setGlobalError('Connection error. Is the backend running?');
   } finally {
     setLoading(false);
   }
@@ -478,6 +523,83 @@ const handleForgotSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       font-size: 0.85rem;
       margin-top: 0.4rem;
       animation: slideInLeft 0.3s ease-out;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-weight: 500;
+    }
+
+    .alert-banner {
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      animation: slideInLeft 0.4s ease-out;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .alert-error {
+      background: linear-gradient(135deg, #fff5f5 0%, #fee 100%);
+      border: 2px solid #fecaca;
+      color: #991b1b;
+    }
+
+    .alert-success {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 2px solid #86efac;
+      color: #166534;
+    }
+
+    .alert-info {
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      border: 2px solid #93c5fd;
+      color: #1e40af;
+    }
+
+    .alert-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .alert-content {
+      flex: 1;
+    }
+
+    .alert-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .alert-message {
+      font-size: 0.9rem;
+      opacity: 0.95;
+    }
+
+    .alert-close {
+      background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      transition: var(--transition);
+      opacity: 0.7;
+    }
+
+    .alert-close:hover {
+      opacity: 1;
+      transform: scale(1.1);
     }
 
     .checkbox-group {
@@ -709,6 +831,48 @@ const handleForgotSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         {/* Login Form */}
         {currentPage === 'login' && (
           <form onSubmit={handleSubmit} className="auth-form">
+            {showSuccessBanner && (
+              <div className="alert-banner alert-success">
+                <div className="alert-icon">
+                  <CheckCircle size={20} />
+                </div>
+                <div className="alert-content">
+                  <div className="alert-title">Registration Successful!</div>
+                  <div className="alert-message">
+                    {successMessage || 'Your account has been created. Please log in to continue.'}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="alert-close"
+                  onClick={() => setShowSuccessBanner(false)}
+                  aria-label="Close alert"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
+
+            {globalError && (
+              <div className="alert-banner alert-error">
+                <div className="alert-icon">
+                  <AlertCircle size={20} />
+                </div>
+                <div className="alert-content">
+                  <div className="alert-title">Login Failed</div>
+                  <div className="alert-message">{globalError}</div>
+                </div>
+                <button
+                  type="button"
+                  className="alert-close"
+                  onClick={() => setGlobalError('')}
+                  aria-label="Close alert"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
+
             <div className="form-group">
               <label className="form-label">📧 Email Address</label>
               <div className="input-wrapper">
@@ -785,6 +949,26 @@ const handleForgotSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         {/* Register Form */}
         {currentPage === 'register' && (
           <form onSubmit={handleSubmit} className="auth-form">
+            {globalError && (
+              <div className="alert-banner alert-error">
+                <div className="alert-icon">
+                  <AlertCircle size={20} />
+                </div>
+                <div className="alert-content">
+                  <div className="alert-title">Registration Failed</div>
+                  <div className="alert-message">{globalError}</div>
+                </div>
+                <button
+                  type="button"
+                  className="alert-close"
+                  onClick={() => setGlobalError('')}
+                  aria-label="Close alert"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
+
             <div className="form-group">
               <label className="form-label">📚 Full Name</label>
               <div className="input-wrapper">
@@ -876,6 +1060,26 @@ const handleForgotSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         {/* Forgot Password Form */}
         {currentPage === 'forgot' && (
           <form onSubmit={handleForgotSubmit} className="auth-form">
+            {globalError && (
+              <div className="alert-banner alert-error">
+                <div className="alert-icon">
+                  <AlertCircle size={20} />
+                </div>
+                <div className="alert-content">
+                  <div className="alert-title">Error</div>
+                  <div className="alert-message">{globalError}</div>
+                </div>
+                <button
+                  type="button"
+                  className="alert-close"
+                  onClick={() => setGlobalError('')}
+                  aria-label="Close alert"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            )}
+
             <p className="form-description">
               Enter your email address and we'll send you a link to reset your password.
             </p>
