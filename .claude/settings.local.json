@@ -20,7 +20,9 @@
       "Bash(php artisan tinker:*)",
       "Bash(php artisan:*)",
       "Bash(npm run dev)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(mysql:*)",
+      "Bash(xargs cat:*)"
     ],
     "deny": [],
     "ask": []

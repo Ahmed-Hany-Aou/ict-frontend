@@ -28,6 +28,8 @@ interface Chapter {
   slides_count: number;
   completed_slides: number;
   is_premium: boolean;
+  publish_at?: string | null;
+  is_scheduled?: boolean;
 }
 
 interface Progress {
@@ -111,7 +113,10 @@ export default function Dashboard() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, isScheduled?: boolean) => {
+    if (isScheduled) {
+      return 'bg-orange-100 text-orange-700 border-orange-300';
+    }
     switch (status) {
       case 'completed':
         return 'bg-green-100 text-green-700 border-green-300';
@@ -122,7 +127,10 @@ export default function Dashboard() {
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: string, isScheduled?: boolean) => {
+    if (isScheduled) {
+      return 'Coming Soon';
+    }
     switch (status) {
       case 'completed':
         return 'Completed';
@@ -300,25 +308,28 @@ export default function Dashboard() {
               <div className="space-y-4">
                 {chapters.map((chapter) => {
                   const isLocked = chapter.is_premium && !isPremium;
+                  const isScheduled = chapter.is_scheduled || false;
 
                   return (
                     <div
                       key={chapter.id}
-                      onClick={() => handleChapterClick(chapter)}
-                      className={`border-2 rounded-lg p-4 transition-all cursor-pointer group ${
-                        isLocked
-                          ? 'border-gray-300 opacity-80'
-                          : 'border-gray-200 hover:border-blue-400 hover:shadow-lg'
+                      onClick={() => !isScheduled && handleChapterClick(chapter)}
+                      className={`border-2 rounded-lg p-4 transition-all group ${
+                        isScheduled
+                          ? 'border-orange-300 opacity-80 cursor-not-allowed'
+                          : isLocked
+                          ? 'border-gray-300 opacity-80 cursor-pointer'
+                          : 'border-gray-200 hover:border-blue-400 hover:shadow-lg cursor-pointer'
                       }`}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 pr-4">
                           <div className="flex items-center gap-3 mb-2">
                             <span className="text-2xl">
-                              {isLocked ? '🔒' : chapter.chapter_number === 1 ? '💻' : '📚'}
+                              {isScheduled ? '⏰' : isLocked ? '🔒' : chapter.chapter_number === 1 ? '💻' : '📚'}
                             </span>
                             <h3 className={`text-lg font-semibold ${
-                              isLocked ? 'text-gray-700' : 'text-gray-900 group-hover:text-blue-600'
+                              isScheduled ? 'text-orange-700' : isLocked ? 'text-gray-700' : 'text-gray-900 group-hover:text-blue-600'
                             } transition-colors`}>
                               Chapter {chapter.chapter_number}: {chapter.title}
                             </h3>
@@ -327,8 +338,8 @@ export default function Dashboard() {
 
                           <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
                             <span>{chapter.completed_slides}/{chapter.slides_count} slides completed</span>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status)}`}>
-                              {getStatusLabel(chapter.status)}
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status, isScheduled)}`}>
+                              {getStatusLabel(chapter.status, isScheduled)}
                             </span>
                           </div>
 
@@ -336,9 +347,9 @@ export default function Dashboard() {
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div
                               className={`h-2 rounded-full transition-all duration-500 ${
-                                isLocked ? 'bg-gray-400' : 'bg-blue-600'
+                                isScheduled ? 'bg-orange-400' : isLocked ? 'bg-gray-400' : 'bg-blue-600'
                               }`}
-                              style={{ width: `${chapter.progress_percentage}%` }}
+                              style={{ width: `${isScheduled ? 0 : chapter.progress_percentage}%` }}
                             />
                           </div>
                         </div>
@@ -347,15 +358,25 @@ export default function Dashboard() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleChapterClick(chapter);
+                            if (!isScheduled) handleChapterClick(chapter);
                           }}
                           className={`ml-4 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 self-start ${
-                            isLocked
+                            isScheduled
+                              ? 'bg-orange-400 cursor-not-allowed'
+                              : isLocked
                               ? 'bg-gray-500 hover:bg-gray-600'
                               : 'bg-blue-600 hover:bg-blue-700'
                           }`}
+                          disabled={isScheduled}
                         >
-                          {isLocked ? (
+                          {isScheduled ? (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Soon
+                            </>
+                          ) : isLocked ? (
                             <>
                               <Lock size={16} />
                               Upgrade
