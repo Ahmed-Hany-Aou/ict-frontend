@@ -27,6 +27,8 @@ interface Chapter {
   completed_slides: number;
   is_premium: boolean;
   is_locked?: boolean;
+  publish_at?: string | null;
+  is_scheduled?: boolean;
 }
 
 export default function Chapters() {
@@ -103,7 +105,10 @@ export default function Chapters() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, isScheduled?: boolean) => {
+    if (isScheduled) {
+      return 'bg-orange-100 text-orange-700 border-orange-300';
+    }
     switch (status) {
       case 'completed':
         return 'bg-green-100 text-green-700 border-green-300';
@@ -114,7 +119,10 @@ export default function Chapters() {
     }
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: string, isScheduled?: boolean) => {
+    if (isScheduled) {
+      return 'Coming Soon';
+    }
     switch (status) {
       case 'completed':
         return 'Completed';
@@ -187,12 +195,15 @@ export default function Chapters() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {chapters.map((chapter) => {
                 const isLocked = chapter.is_locked || (chapter.is_premium && !isPremium);
+                const isScheduled = chapter.is_scheduled || false;
 
                 return (
                   <div
                     key={chapter.id}
                     className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all border-2 overflow-hidden ${
-                      isLocked
+                      isScheduled
+                        ? 'border-orange-300 opacity-90'
+                        : isLocked
                         ? 'border-gray-300 opacity-90'
                         : 'border-gray-100 hover:border-blue-400'
                     }`}
@@ -200,14 +211,16 @@ export default function Chapters() {
                     {/* Header with status badge */}
                     <div
                       className={`p-6 text-white relative ${
-                        isLocked
+                        isScheduled
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600'
+                          : isLocked
                           ? 'bg-gradient-to-r from-gray-500 to-gray-600'
                           : 'bg-gradient-to-r from-blue-500 to-blue-600'
                       }`}
                     >
                       <div className="absolute top-4 right-4 flex gap-2">
                         {chapter.is_premium && <PremiumBadge variant="crown" size="sm" />}
-                        {chapter.status === 'completed' && !isLocked && (
+                        {chapter.status === 'completed' && !isLocked && !isScheduled && (
                           <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                             <CheckCircle size={14} />
                             DONE
@@ -215,12 +228,12 @@ export default function Chapters() {
                         )}
                       </div>
                       <div className="text-5xl mb-3">
-                        {isLocked ? '🔒' : chapter.chapter_number === 1 ? '💻' : '📚'}
+                        {isScheduled ? '⏰' : isLocked ? '🔒' : chapter.chapter_number === 1 ? '💻' : '📚'}
                       </div>
                       <h3 className="text-xl font-bold mb-1">
                         Chapter {chapter.chapter_number}
                       </h3>
-                      <p className={`text-sm ${isLocked ? 'text-gray-200' : 'text-blue-100'}`}>
+                      <p className={`text-sm ${isScheduled ? 'text-orange-100' : isLocked ? 'text-gray-200' : 'text-blue-100'}`}>
                         {chapter.slides_count} slides
                       </p>
                     </div>
@@ -245,9 +258,9 @@ export default function Chapters() {
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
                             className={`h-2 rounded-full transition-all duration-500 ${
-                              isLocked ? 'bg-gray-400' : 'bg-blue-600'
+                              isScheduled ? 'bg-orange-400' : isLocked ? 'bg-gray-400' : 'bg-blue-600'
                             }`}
-                            style={{ width: `${chapter.progress_percentage}%` }}
+                            style={{ width: `${isScheduled ? 0 : chapter.progress_percentage}%` }}
                           />
                         </div>
                       </div>
@@ -260,15 +273,27 @@ export default function Chapters() {
                         </span>
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                            chapter.status
+                            chapter.status, isScheduled
                           )}`}
                         >
-                          {getStatusLabel(chapter.status)}
+                          {getStatusLabel(chapter.status, isScheduled)}
                         </span>
                       </div>
 
+                      {/* Scheduled Message */}
+                      {isScheduled && (
+                        <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-2">
+                          <svg className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <p className="text-xs text-orange-700">
+                            This chapter will be available on {new Date(chapter.publish_at || '').toLocaleDateString()}
+                          </p>
+                        </div>
+                      )}
+
                       {/* Locked Message */}
-                      {isLocked && (
+                      {isLocked && !isScheduled && (
                         <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
                           <Lock size={16} className="text-yellow-600 flex-shrink-0 mt-0.5" />
                           <p className="text-xs text-yellow-700">
@@ -282,12 +307,22 @@ export default function Chapters() {
                         <button
                           onClick={() => handleChapterClick(chapter)}
                           className={`flex-1 px-4 py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors ${
-                            isLocked
+                            isScheduled
+                              ? 'bg-orange-400 text-white cursor-not-allowed'
+                              : isLocked
                               ? 'bg-gray-400 text-white cursor-pointer hover:bg-gray-500'
                               : 'bg-blue-600 text-white hover:bg-blue-700'
                           }`}
+                          disabled={isScheduled}
                         >
-                          {isLocked ? (
+                          {isScheduled ? (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              Coming Soon
+                            </>
+                          ) : isLocked ? (
                             <>
                               <Lock size={16} />
                               Upgrade
@@ -306,12 +341,12 @@ export default function Chapters() {
                         <button
                           onClick={() => handleQuizClick(chapter)}
                           className={`px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center ${
-                            isLocked
+                            isScheduled || isLocked
                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                               : 'bg-orange-500 text-white hover:bg-orange-600'
                           }`}
-                          title={isLocked ? 'Premium content' : 'Take Quiz'}
-                          disabled={isLocked}
+                          title={isScheduled ? 'Coming soon' : isLocked ? 'Premium content' : 'Take Quiz'}
+                          disabled={isScheduled || isLocked}
                         >
                           <FileQuestion size={18} />
                         </button>

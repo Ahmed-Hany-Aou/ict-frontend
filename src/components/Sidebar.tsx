@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import InstallButton from './InstallButton';
 import {
   Home,
   BookOpen,
@@ -13,7 +14,9 @@ import {
   Crown,
   Zap,
   Sparkles,
-  Mail
+  Mail,
+  Download,
+  Smartphone
 } from 'lucide-react';
 import { usePremium } from '../context/PremiumContext';
 import PremiumModal from './PremiumModal';
@@ -28,11 +31,32 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const { isPremium, premiumExpiresAt, daysRemaining, loading: premiumLoading } = usePremium();
   const [pricing, setPricing] = useState<PricingData | null>(null);
 
   useEffect(() => {
     loadPricing();
+
+    // Check if running in standalone mode (PWA installed and running)
+    const checkStandalone = () => {
+      const standalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true ||
+        document.referrer.includes('android-app://');
+      setIsStandalone(standalone);
+    };
+
+    checkStandalone();
+
+    // Listen for display mode changes
+    const mediaQuery = window.matchMedia('(display-mode: standalone)');
+    const handleChange = () => checkStandalone();
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+    };
   }, []);
 
   const loadPricing = async () => {
@@ -123,104 +147,126 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
 
         {/* Scrollable Content Container */}
         <div className="flex-1 overflow-y-auto">
-        {/* Navigation Menu */}
-        <nav className="p-4 space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+          {/* Navigation Menu */}
+          <nav className="p-4 space-y-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
 
-            return (
-              <button
-                key={item.path}
-                onClick={() => handleNavigation(item.path)}
-                className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-lg
-                  transition-all duration-200
-                  ${
-                    isActive
-                      ? 'bg-white text-blue-700 shadow-lg'
-                      : 'text-blue-100 hover:bg-blue-600 hover:text-white'
-                  }
-                `}
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => handleNavigation(item.path)}
+                  className={`
+                    w-full flex items-center gap-3 px-4 py-3 rounded-lg
+                    transition-all duration-200
+                    ${
+                      isActive
+                        ? 'bg-white text-blue-700 shadow-lg'
+                        : 'text-blue-100 hover:bg-blue-600 hover:text-white'
+                    }
+                  `}
+                >
+                  <Icon size={20} />
+                  <span className="font-medium">{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Install App Section */}
+<div className="p-4 border-t border-blue-600">
+  <h3 className="text-blue-200 text-sm font-semibold mb-3 uppercase tracking-wider">
+    Mobile App
+  </h3>
+  <div className="space-y-2">
+    {/* Smart Install Button - Shows platform-specific install action */}
+    <InstallButton />
+
+    {/* Always Available - Detailed Instructions */}
+    <button
+      onClick={() => window.open('/install', '_blank')}
+      className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-600 hover:text-white transition-all duration-200 bg-blue-800 bg-opacity-50"
+    >
+      <Smartphone size={20} />
+      <span className="font-medium">
+        {isStandalone ? 'App Instructions' : 'Install Instructions'}
+      </span>
+    </button>
+  </div>
+</div>
+
+          {/* Upgrade to Premium Section - Only show if not premium */}
+          {!isPremium && !premiumLoading && (
+            <div className="p-4 border-t border-blue-600">
+              <div
+                onClick={() => setShowPremiumModal(true)}
+                className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
               >
-                <Icon size={20} />
-                <span className="font-medium">{item.label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Upgrade to Premium Section - Only show if not premium */}
-        {!isPremium && !premiumLoading && (
-          <div className="p-4 border-t border-blue-600">
-            <div
-              onClick={() => setShowPremiumModal(true)}
-              className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-orange-500 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer"
-            >
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Crown className="text-white" size={24} fill="currentColor" />
-                <Zap className="text-white" size={20} />
-              </div>
-              <h3 className="text-white font-bold text-center text-lg mb-1">
-                Upgrade to Premium
-              </h3>
-              <p className="text-white text-xs text-center mb-3 opacity-90">
-                (for short time)
-              </p>
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <span className="text-white text-sm line-through opacity-75">
-                  {pricing?.formatted.original_price || 'EGP 600'}
-                </span>
-                <span className="text-white text-2xl font-extrabold">
-                  {pricing?.formatted.discounted_price || 'EGP 300'}
-                </span>
-              </div>
-              <div className="w-full bg-white text-orange-600 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2">
-                <Crown size={18} />
-                Get Premium
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Premium Status - Show if user is premium */}
-        {isPremium && !premiumLoading && (
-          <div className="p-4 border-t border-blue-600">
-            <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-xl p-4 shadow-lg">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <Crown className="text-white" size={24} fill="currentColor" />
-                <Sparkles className="text-white" size={20} />
-              </div>
-              <h3 className="text-white font-bold text-center text-lg mb-1">
-                Premium Active
-              </h3>
-              {daysRemaining !== null && (
-                <p className="text-white text-sm text-center opacity-90">
-                  {Math.round(daysRemaining)} {Math.round(daysRemaining) === 1 ? 'day' : 'days'} remaining
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Crown className="text-white" size={24} fill="currentColor" />
+                  <Zap className="text-white" size={20} />
+                </div>
+                <h3 className="text-white font-bold text-center text-lg mb-1">
+                  Upgrade to Premium
+                </h3>
+                <p className="text-white text-xs text-center mb-3 opacity-90">
+                  (for short time)
                 </p>
-              )}
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <span className="text-white text-sm line-through opacity-75">
+                    {pricing?.formatted.original_price || 'EGP 600'}
+                  </span>
+                  <span className="text-white text-2xl font-extrabold">
+                    {pricing?.formatted.discounted_price || 'EGP 300'}
+                  </span>
+                </div>
+                <div className="w-full bg-white text-orange-600 font-bold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors duration-200 flex items-center justify-center gap-2">
+                  <Crown size={18} />
+                  Get Premium
+                </div>
+              </div>
             </div>
+          )}
+
+          {/* Premium Status - Show if user is premium */}
+          {isPremium && !premiumLoading && (
+            <div className="p-4 border-t border-blue-600">
+              <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-xl p-4 shadow-lg">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <Crown className="text-white" size={24} fill="currentColor" />
+                  <Sparkles className="text-white" size={20} />
+                </div>
+                <h3 className="text-white font-bold text-center text-lg mb-1">
+                  Premium Active
+                </h3>
+                {daysRemaining !== null && (
+                  <p className="text-white text-sm text-center opacity-90">
+                    {Math.round(daysRemaining)} {Math.round(daysRemaining) === 1 ? 'day' : 'days'} remaining
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* User Section */}
+          <div className="p-4 border-t border-blue-600">
+            <button
+              onClick={() => handleNavigation('/profile')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-600 hover:text-white transition-all duration-200 mb-2"
+            >
+              <User size={20} />
+              <span className="font-medium">Profile</span>
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-200 hover:bg-red-500 hover:text-white transition-all duration-200"
+            >
+              <LogOut size={20} />
+              <span className="font-medium">Logout</span>
+            </button>
           </div>
-        )}
-
-        {/* User Section */}
-        <div className="p-4 border-t border-blue-600">
-          <button
-            onClick={() => handleNavigation('/profile')}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-blue-100 hover:bg-blue-600 hover:text-white transition-all duration-200 mb-2"
-          >
-            <User size={20} />
-            <span className="font-medium">Profile</span>
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-200 hover:bg-red-500 hover:text-white transition-all duration-200"
-          >
-            <LogOut size={20} />
-            <span className="font-medium">Logout</span>
-          </button>
-        </div>
         </div>
       </div>
 

@@ -31,21 +31,23 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token expired or invalid
-      console.log('401 Error Detected. Logging out.'); // For debugging
+      const url = error.config?.url || '';
+
+      // Don't redirect if it's a login/register/forgot-password attempt
+      // These endpoints are expected to return 401 for wrong credentials
+      if (url.includes('/login') || url.includes('/register') || url.includes('/forgot-password')) {
+        return Promise.reject(error);
+      }
+
+      // For other 401 errors (expired/invalid token during authenticated requests)
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
-      
-      // We still redirect, but we also reject the promise
-      // so the component's 'catch' block can run.
-      window.location.href = '/auth';
 
-      // ----------------------------------------------
-      // 👇 ADD THIS LINE TO FIX THE BUG
-      // ----------------------------------------------
-      return Promise.reject(error); 
+      // Redirect to auth page
+      window.location.href = '/auth';
+      return Promise.reject(error);
     }
-    
+
     // For all other errors, just reject
     return Promise.reject(error);
   }

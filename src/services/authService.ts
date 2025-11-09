@@ -51,10 +51,10 @@ class AuthService {
       const response = await api.post('/login', data);
       const result = response.data;
 
-      if (response.status === 200 && result.access_token) {
+      if (response.status === 200 && result.success && result.access_token) {
         localStorage.setItem('auth_token', result.access_token);
         localStorage.setItem('user', JSON.stringify(result.user));
-        
+
         return {
           success: true,
           message: result.message,
@@ -62,7 +62,7 @@ class AuthService {
           user: result.user,
         };
       }
-      
+
       return {
         success: false,
         message: result.message || 'Login failed',
@@ -72,6 +72,7 @@ class AuthService {
       return {
         success: false,
         message: error.response?.data?.message || 'Connection error. Is the backend running?',
+        errors: error.response?.data?.errors,
       };
     }
   }
@@ -91,14 +92,11 @@ class AuthService {
       const response = await api.post('/register', payload);
       const result = response.data;
 
-      if (response.status === 200 && result.access_token) {
-        localStorage.setItem('auth_token', result.access_token);
-        localStorage.setItem('user', JSON.stringify(result.user));
-        
+      // Registration successful - no auto-login, redirect to login page
+      if (response.status === 201 && result.success) {
         return {
           success: true,
           message: result.message,
-          access_token: result.access_token,
           user: result.user,
         };
       }
@@ -112,6 +110,7 @@ class AuthService {
       return {
         success: false,
         message: error.response?.data?.message || 'Connection error',
+        errors: error.response?.data?.errors,
       };
     }
   }
