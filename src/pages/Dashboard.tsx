@@ -343,6 +343,28 @@ export default function Dashboard() {
                             </span>
                           </div>
 
+                          {/* Scheduled Message */}
+                          {isScheduled && chapter.publish_at && (
+                            <div className="mb-3 bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-2">
+                              <svg className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <p className="text-xs text-orange-700">
+                                This chapter will be available on {new Date(chapter.publish_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Locked Message */}
+                          {isLocked && !isScheduled && (
+                            <div className="mb-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+                              <Lock size={16} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-yellow-700">
+                                Premium content - Upgrade to access
+                              </p>
+                            </div>
+                          )}
+
                           {/* Chapter Progress Bar */}
                           <div className="w-full bg-gray-200 rounded-full h-2">
                             <div

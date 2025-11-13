@@ -15,6 +15,7 @@ import Progress from './pages/Progress';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import InstallGuide from './pages/InstallGuide';
+import About from './pages/About';
 
 
 function AppRoutes() {
@@ -69,6 +70,10 @@ function AppRoutes() {
       <Route
         path="/contact"
         element={isAuthenticated ? <Contact /> : <Navigate to="/auth" />}
+      />
+      <Route
+        path="/about"
+        element={isAuthenticated ? <About /> : <Navigate to="/auth" />}
       />
       <Route
         path="/quiz/:quizId"

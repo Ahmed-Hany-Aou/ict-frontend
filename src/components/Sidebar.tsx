@@ -16,7 +16,8 @@ import {
   Sparkles,
   Mail,
   Download,
-  Smartphone
+  Smartphone,
+  Info
 } from 'lucide-react';
 import { usePremium } from '../context/PremiumContext';
 import PremiumModal from './PremiumModal';
@@ -88,6 +89,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     { icon: ClipboardList, label: 'Quizzes', path: '/quizzes' },
     { icon: Award, label: 'Results', path: '/results' },
     { icon: BarChart3, label: 'Progress', path: '/progress' },
+    { icon: Info, label: 'About', path: '/about' },
     { icon: Mail, label: 'Contact', path: '/contact' },
   ];
 
