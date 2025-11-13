@@ -263,9 +263,18 @@ export const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
             e.currentTarget.style.textDecoration = 'none';
           }}
         >
-          Click to pay to: <strong>ahmedhanycib</strong>
+          Click here to pay to: <strong>ahmedhanycib</strong>
         </a>
+       <strong> or scan the QR code below: </strong>
+      <div className="flex justify-center mb-6">
+        <img 
+          src="/images/instapay/instapay-qr.jpeg"
+          alt="Instapay QR Code" 
+          className="w-100 h-100 object-contain"
+        />
+      </div>
       </p>
+      
       
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Payment Reference */}
