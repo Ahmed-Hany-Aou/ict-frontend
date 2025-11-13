@@ -26,7 +26,7 @@ const defaultBenefits = [
   '30 days of premium access',
 ];
 
-export const PremiumModal: React.FC<PremiumModalProps> = ({
+export const PremiumModal: React.FC<PremiumModalProps> = React.memo(({
   isOpen,
   onClose,
   title = 'Premium Content',
@@ -236,6 +236,6 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({
       </div>
     </div>
   );
-};
+});
 
 export default PremiumModal;

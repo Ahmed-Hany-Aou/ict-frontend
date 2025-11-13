@@ -1,28 +1,56 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PremiumProvider } from './context/PremiumContext';
-import AuthPages from './AuthPages';
-import Dashboard from './pages/Dashboard';
-import Chapters from './pages/Chapters';
-import ChapterViewer from './pages/ChapterViewer';
-import SlideViewer from './pages/SlideViewer';
-import Quiz from './pages/Quiz';
-import Quizzes from './pages/Quizzes';
-import Results from './pages/Results';
-import QuizResultDetail from './pages/QuizResultDetail';
-import Progress from './pages/Progress';
-import Profile from './pages/Profile';
-import Contact from './pages/Contact';
-import InstallGuide from './pages/InstallGuide';
-import About from './pages/About';
+import { Loader } from 'lucide-react';
+
+// Create React Query client with optimized config
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
+      gcTime: 10 * 60 * 1000, // Garbage collect cached data after 10 minutes
+      refetchOnWindowFocus: false, // Don't refetch on window focus
+      refetchOnReconnect: true, // Refetch when reconnecting
+      retry: 1, // Retry failed requests once
+    },
+  },
+});
+
+// Lazy load all page components for better performance
+const AuthPages = lazy(() => import('./AuthPages'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Chapters = lazy(() => import('./pages/Chapters'));
+const ChapterViewer = lazy(() => import('./pages/ChapterViewer'));
+const SlideViewer = lazy(() => import('./pages/SlideViewer'));
+const Quiz = lazy(() => import('./pages/Quiz'));
+const Quizzes = lazy(() => import('./pages/Quizzes'));
+const Results = lazy(() => import('./pages/Results'));
+const QuizResultDetail = lazy(() => import('./pages/QuizResultDetail'));
+const Progress = lazy(() => import('./pages/Progress'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Contact = lazy(() => import('./pages/Contact'));
+const InstallGuide = lazy(() => import('./pages/InstallGuide'));
+const About = lazy(() => import('./pages/About'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center min-h-screen bg-gray-50">
+    <div className="text-center">
+      <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
+      <p className="text-gray-600 font-medium">Loading...</p>
+    </div>
+  </div>
+);
 
 
 function AppRoutes() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <Routes>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
   <Route path="/install" element={<InstallGuide />} />
       <Route path="/auth" element={<AuthPages />} />
       <Route
@@ -84,19 +112,22 @@ function AppRoutes() {
         element={isAuthenticated ? <Quiz /> : <Navigate to="/auth" />}
       />
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <PremiumProvider>
-          <AppRoutes />
-        </PremiumProvider>
-      </AuthProvider>
-    </Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AuthProvider>
+          <PremiumProvider>
+            <AppRoutes />
+          </PremiumProvider>
+        </AuthProvider>
+      </Router>
+    </QueryClientProvider>
   );
 }
 

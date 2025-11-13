@@ -134,34 +134,34 @@ export default function About() {
       <div className="flex-1 lg:ml-64">
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-6">
-                <BookOpen className="text-blue-600" size={40} />
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full mb-4 sm:mb-6">
+                <BookOpen className="text-blue-600" size={32} />
               </div>
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4 px-2">
                 Welcome to ICT Learning Platform
               </h1>
-              <p className="text-xl text-blue-100 max-w-3xl mx-auto mb-8">
+              <p className="text-base sm:text-xl text-blue-100 max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
                 A modern, interactive learning platform designed to help students master Information and Communication Technology concepts through engaging content and hands-on practice.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={20} />
-                    <span className="font-semibold">Self-Paced Learning</span>
+              <div className="flex flex-wrap justify-center gap-2 sm:gap-4 px-4">
+                <div className="bg-white/10 backdrop-blur-sm px-3 sm:px-6 py-2 sm:py-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <CheckCircle size={16} className="sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span className="text-xs sm:text-base font-semibold">Self-Paced Learning</span>
                   </div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={20} />
-                    <span className="font-semibold">Interactive Content</span>
+                <div className="bg-white/10 backdrop-blur-sm px-3 sm:px-6 py-2 sm:py-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <CheckCircle size={16} className="sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span className="text-xs sm:text-base font-semibold">Interactive Content</span>
                   </div>
                 </div>
-                <div className="bg-white/10 backdrop-blur-sm px-6 py-3 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={20} />
-                    <span className="font-semibold">Progress Tracking</span>
+                <div className="bg-white/10 backdrop-blur-sm px-3 sm:px-6 py-2 sm:py-3 rounded-lg">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <CheckCircle size={16} className="sm:w-5 sm:h-5 flex-shrink-0" />
+                    <span className="text-xs sm:text-base font-semibold">Progress Tracking</span>
                   </div>
                 </div>
               </div>
@@ -170,27 +170,27 @@ export default function About() {
         </div>
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
           {/* Mission Section */}
-          <div className="mb-16">
-            <div className="bg-white rounded-2xl shadow-lg p-8 md:p-12">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="mb-8 sm:mb-16">
+            <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 md:p-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-center">
                 <div>
-                  <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-full mb-4">
-                    <Target size={20} />
-                    <span className="font-semibold">Our Mission</span>
+                  <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-3 sm:mb-4">
+                    <Target size={16} className="sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base font-semibold">Our Mission</span>
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
                     Empowering Students Through Technology
                   </h2>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
+                  <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-4 leading-relaxed">
                     Our platform is dedicated to providing high-quality, accessible ICT education to students at all levels. We believe that technology education should be engaging, practical, and tailored to modern learning needs.
                   </p>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                     By combining interactive content, real-time progress tracking, and comprehensive assessments, we create an environment where students can learn at their own pace and achieve their full potential.
                   </p>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-xl">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                       <Lightbulb className="text-blue-600" size={20} />
@@ -224,21 +224,21 @@ export default function About() {
           </div>
 
           {/* Features Grid */}
-          <div className="mb-16">
-            <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-600 px-4 py-2 rounded-full mb-4">
-                <Star size={20} />
-                <span className="font-semibold">Platform Features</span>
+          <div className="mb-8 sm:mb-16">
+            <div className="text-center mb-8 sm:mb-12">
+              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full mb-3 sm:mb-4">
+                <Star size={16} className="sm:w-5 sm:h-5" />
+                <span className="text-sm sm:text-base font-semibold">Platform Features</span>
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 px-4">
                 Everything You Need to Succeed
               </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4">
                 Our platform offers a comprehensive suite of features designed to enhance your learning experience and help you achieve your academic goals.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {features.map((feature, index) => {
                 const Icon = feature.icon;
                 const colors = getColorClasses(feature.color);

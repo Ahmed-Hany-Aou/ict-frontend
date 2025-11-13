@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
 import {
@@ -10,13 +11,13 @@ import {
   ChevronRight,
   Clock,
   CheckCircle,
-  Loader,
   Lock
 } from 'lucide-react';
 import { usePremium } from '../context/PremiumContext';
 import PremiumBadge from '../components/PremiumBadge';
 import PremiumModal from '../components/PremiumModal';
 import PremiumService, { PricingData } from '../services/premiumService';
+import { QuizzesGridSkeleton } from '../components/Skeleton';
 
 interface Quiz {
   id: number;
@@ -62,54 +63,41 @@ const categoryLabels = {
 export default function Quizzes() {
   const navigate = useNavigate();
   const { isPremium, loading: premiumLoading } = usePremium();
-  const [quizzes, setQuizzes] = useState<GroupedQuizzes>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedLockedQuiz, setSelectedLockedQuiz] = useState<Quiz | null>(null);
-  const [pricing, setPricing] = useState<PricingData | null>(null);
 
-  useEffect(() => {
-    fetchQuizzes();
-    loadPricing();
-  }, []);
-
-  const fetchQuizzes = async () => {
-    try {
-      setLoading(true);
+  // Fetch quizzes with React Query
+  const { data: quizzes = {}, isLoading, error } = useQuery<GroupedQuizzes>({
+    queryKey: ['quizzes'],
+    queryFn: async () => {
       const response = await api.get('/quizzes');
-      setQuizzes(response.data.quizzes || {});
-      setError(null);
-    } catch (err: any) {
-      console.error('Error fetching quizzes:', err);
-      setError('Failed to load quizzes');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data.quizzes || {};
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  const loadPricing = async () => {
-    try {
+  // Fetch pricing with React Query
+  const { data: pricing } = useQuery<PricingData>({
+    queryKey: ['pricing'],
+    queryFn: async () => {
       const response = await PremiumService.getPricing();
-      setPricing(response.data);
-    } catch (err) {
-      console.error('Error loading pricing:', err);
-      // Use fallback pricing if API fails
-      setPricing({
-        currency: 'EGP',
-        currency_symbol: 'EGP',
-        original_price: 500,
-        discounted_price: 300,
-        discount_percentage: 40,
-        duration_days: 30,
-        description: 'Get full access to all premium content for 30 days',
-        formatted: {
-          original_price: 'EGP 500',
-          discounted_price: 'EGP 300',
-        },
-      });
-    }
-  };
+      return response.data;
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    placeholderData: {
+      currency: 'EGP',
+      currency_symbol: 'EGP',
+      original_price: 500,
+      discounted_price: 300,
+      discount_percentage: 40,
+      duration_days: 30,
+      description: 'Get full access to all premium content for 30 days',
+      formatted: {
+        original_price: 'EGP 500',
+        discounted_price: 'EGP 300',
+      },
+    },
+  });
 
   const startQuiz = (quiz: Quiz) => {
     const isLocked = quiz.is_locked || (quiz.is_premium && !isPremium);
@@ -122,22 +110,28 @@ export default function Quizzes() {
     }
   };
 
-  if (loading || premiumLoading) {
+  // Show skeleton while loading
+  if (isLoading || premiumLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
-              <p className="text-gray-600">Loading quizzes...</p>
+          {/* Header */}
+          <div className="bg-white shadow-sm border-b">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Quizzes & Exams</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-2">Test your knowledge and track your progress</p>
             </div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <QuizzesGridSkeleton />
           </div>
         </div>
       </div>
     );
   }
 
+  // Show error state
   if (error) {
     return (
       <div className="flex min-h-screen bg-gray-50">
@@ -145,9 +139,9 @@ export default function Quizzes() {
         <div className="flex-1 lg:ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="text-center">
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-red-600 mb-4">Failed to load quizzes</p>
               <button
-                onClick={fetchQuizzes}
+                onClick={() => window.location.reload()}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
               >
                 Try Again
@@ -166,9 +160,9 @@ export default function Quizzes() {
       <div className="flex-1 lg:ml-64">
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Quizzes & Exams</h1>
-            <p className="text-gray-600 mt-2">Test your knowledge and track your progress</p>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Quizzes & Exams</h1>
+            <p className="text-sm sm:text-base text-gray-600 mt-2">Test your knowledge and track your progress</p>
           </div>
         </div>
 

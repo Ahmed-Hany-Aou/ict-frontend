@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import api from '../services/api';
 import InstallButton from './InstallButton';
 import {
   Home,
@@ -30,6 +32,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
@@ -98,6 +101,99 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     setIsOpen(false);
   };
 
+  // Prefetch data on hover for instant navigation
+  const prefetchChapters = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['chapters'],
+      queryFn: async () => {
+        const response = await api.get('/chapters');
+        return response.data.chapters || [];
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const prefetchQuizzes = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['quizzes'],
+      queryFn: async () => {
+        const response = await api.get('/quizzes');
+        return response.data.quizzes || {};
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const prefetchDashboard = () => {
+    // Prefetch both chapters and progress
+    queryClient.prefetchQuery({
+      queryKey: ['chapters'],
+      queryFn: async () => {
+        const response = await api.get('/chapters');
+        return response.data.chapters || [];
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['user-progress'],
+      queryFn: async () => {
+        const response = await api.get('/user/progress');
+        return response.data.statistics || null;
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+  };
+
+  const prefetchResults = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['quiz-results'],
+      queryFn: async () => {
+        const response = await api.get('/quiz/results');
+        return response.data.results || [];
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+  };
+
+  const prefetchProgress = () => {
+    // Prefetch both progress and chapters
+    queryClient.prefetchQuery({
+      queryKey: ['user-progress'],
+      queryFn: async () => {
+        const response = await api.get('/user/progress');
+        return response.data.statistics || null;
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['chapters'],
+      queryFn: async () => {
+        const response = await api.get('/chapters');
+        return response.data.chapters || [];
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const prefetchProfile = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['user-profile'],
+      queryFn: async () => {
+        const response = await api.get('/user');
+        return response.data;
+      },
+      staleTime: 10 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['user-progress'],
+      queryFn: async () => {
+        const response = await api.get('/user/progress');
+        return response.data.statistics || null;
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+  };
+
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
@@ -155,10 +251,24 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
 
+              // Determine prefetch function based on path
+              const getPrefetchFn = (path: string) => {
+                if (path === '/dashboard') return prefetchDashboard;
+                if (path === '/chapters') return prefetchChapters;
+                if (path === '/quizzes') return prefetchQuizzes;
+                if (path === '/results') return prefetchResults;
+                if (path === '/progress') return prefetchProgress;
+                if (path === '/profile') return prefetchProfile;
+                return undefined;
+              };
+
+              const prefetchFn = getPrefetchFn(item.path);
+
               return (
                 <button
                   key={item.path}
                   onClick={() => handleNavigation(item.path)}
+                  onMouseEnter={prefetchFn} // Prefetch on hover
                   className={`
                     w-full flex items-center gap-3 px-4 py-3 rounded-lg
                     transition-all duration-200

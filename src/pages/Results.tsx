@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
 import api from '../services/api';
+import { ResultsListSkeleton } from '../components/Skeleton';
 import {
   Award,
   TrendingUp,
@@ -38,28 +40,17 @@ interface QuizResult {
 
 export default function Results() {
   const navigate = useNavigate();
-  const [results, setResults] = useState<QuizResult[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'passed' | 'failed'>('all');
 
-  useEffect(() => {
-    loadResults();
-  }, []);
-
-  const loadResults = async () => {
-    try {
-      setLoading(true);
+  // Fetch results with React Query
+  const { data: results = [], isLoading, error } = useQuery<QuizResult[]>({
+    queryKey: ['quiz-results'],
+    queryFn: async () => {
       const response = await api.get('/quiz/results');
-      setResults(response.data.results || []);
-      setError(null);
-    } catch (err) {
-      console.error('Error loading results:', err);
-      setError('Failed to load quiz results');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data.results || [];
+    },
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
 
   const filteredResults = results.filter(result => {
     if (filter === 'passed') return result.passed;
@@ -94,22 +85,28 @@ export default function Results() {
     return `${minutes}m ${secs}s`;
   };
 
-  if (loading) {
+  // Show skeleton while loading
+  if (isLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
-              <p className="text-gray-600">Loading results...</p>
+          {/* Header */}
+          <div className="bg-white shadow-sm border-b">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Quiz Results</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">View your quiz performance history</p>
             </div>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <ResultsListSkeleton />
           </div>
         </div>
       </div>
     );
   }
 
+  // Show error state
   if (error) {
     return (
       <div className="flex min-h-screen bg-gray-50">
@@ -117,9 +114,9 @@ export default function Results() {
         <div className="flex-1 lg:ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-red-600 mb-4">Failed to load results</p>
               <button
-                onClick={loadResults}
+                onClick={() => window.location.reload()}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
               >
                 Retry
