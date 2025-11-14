@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import PremiumModal from '../components/PremiumModal';
 import api from '../services/api';
 import { DashboardSkeleton } from '../components/Skeleton';
@@ -142,13 +143,7 @@ export default function Dashboard() {
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          {/* Header */}
-          <div className="bg-white shadow-sm border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">Track your learning progress</p>
-            </div>
-          </div>
+          <TopBar title="Dashboard" subtitle="Track your learning progress" />
           <DashboardSkeleton />
         </div>
       </div>
@@ -160,13 +155,7 @@ export default function Dashboard() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">Track your learning progress</p>
-          </div>
-        </div>
+        <TopBar title="Dashboard" subtitle="Track your learning progress" />
 
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">

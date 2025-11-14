@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import api from '../services/api';
 import { ResultsListSkeleton } from '../components/Skeleton';
 import {
@@ -91,13 +92,7 @@ export default function Results() {
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          {/* Header */}
-          <div className="bg-white shadow-sm border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Quiz Results</h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">View your quiz performance history</p>
-            </div>
-          </div>
+          <TopBar title="Results" subtitle="View your quiz performance" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <ResultsListSkeleton />
           </div>
@@ -133,13 +128,7 @@ export default function Results() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Quiz Results</h1>
-            <p className="text-gray-600 mt-1">View your quiz performance and history</p>
-          </div>
-        </div>
+        <TopBar title="Results" subtitle="View your quiz performance" />
 
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

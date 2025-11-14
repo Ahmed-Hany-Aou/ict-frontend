@@ -1,6 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import api from '../services/api';
 import { ProgressStatsSkeleton } from '../components/Skeleton';
 import {
@@ -65,13 +66,7 @@ export default function ProgressPage() {
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          {/* Header */}
-          <div className="bg-white shadow-sm border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Learning Progress</h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">Track your overall learning journey</p>
-            </div>
-          </div>
+          <TopBar title="Progress" subtitle="Track your learning journey" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <ProgressStatsSkeleton />
           </div>
@@ -107,13 +102,7 @@ export default function ProgressPage() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Your Progress</h1>
-            <p className="text-gray-600 mt-1">Track your learning journey</p>
-          </div>
-        </div>
+        <TopBar title="Progress" subtitle="Track your learning journey" />
 
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

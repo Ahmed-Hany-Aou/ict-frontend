@@ -1,5 +1,6 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import {
   BookOpen,
   Target,
@@ -132,6 +133,8 @@ export default function About() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
+        <TopBar title="About" subtitle="Learn more about the platform" />
+
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">

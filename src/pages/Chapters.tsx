@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import api from '../services/api';
 import { ChaptersGridSkeleton } from '../components/Skeleton';
 import {
@@ -128,13 +129,7 @@ export default function Chapters() {
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          {/* Header */}
-          <div className="bg-white shadow-sm border-b">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Chapters</h1>
-              <p className="text-sm sm:text-base text-gray-600 mt-1">Browse and access your learning materials</p>
-            </div>
-          </div>
+          <TopBar title="Chapters" subtitle="Browse all available chapters" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
             <ChaptersGridSkeleton />
           </div>
@@ -170,13 +165,7 @@ export default function Chapters() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Chapters</h1>
-            <p className="text-sm sm:text-base text-gray-600 mt-1">Browse and access your learning materials</p>
-          </div>
-        </div>
+        <TopBar title="Chapters" subtitle="Browse all available chapters" />
 
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
