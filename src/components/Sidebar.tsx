@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import api from '../services/api';
 import InstallButton from './InstallButton';
 import {
@@ -37,11 +37,36 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const { isPremium, premiumExpiresAt, daysRemaining, loading: premiumLoading } = usePremium();
-  const [pricing, setPricing] = useState<PricingData | null>(null);
+
+  // Use React Query to fetch and cache pricing - this prevents multiple API calls
+  // Only fetch when user is authenticated to prevent unnecessary API calls
+  const isAuthenticated = !!localStorage.getItem('auth_token');
+  const { data: pricing } = useQuery<PricingData>({
+    queryKey: ['pricing'],
+    queryFn: async () => {
+      const response = await PremiumService.getPricing();
+      return response.data;
+    },
+    enabled: isAuthenticated, // Only fetch when authenticated
+    staleTime: 30 * 60 * 1000, // 30 minutes - pricing doesn't change often
+    gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
+    retry: 1,
+    placeholderData: {
+      currency: 'EGP',
+      currency_symbol: 'EGP',
+      original_price: 600,
+      discounted_price: 300,
+      discount_percentage: 50,
+      duration_days: 30,
+      description: 'Get full access to all premium content for 30 days',
+      formatted: {
+        original_price: 'EGP 600',
+        discounted_price: 'EGP 300',
+      },
+    },
+  });
 
   useEffect(() => {
-    loadPricing();
-
     // Check if running in standalone mode (PWA installed and running)
     const checkStandalone = () => {
       const standalone =
@@ -62,29 +87,6 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
       mediaQuery.removeEventListener('change', handleChange);
     };
   }, []);
-
-  const loadPricing = async () => {
-    try {
-      const response = await PremiumService.getPricing();
-      setPricing(response.data);
-    } catch (err) {
-      console.error('Error loading pricing:', err);
-      // Use fallback pricing if API fails
-      setPricing({
-        currency: 'EGP',
-        currency_symbol: 'EGP',
-        original_price: 600,
-        discounted_price: 300,
-        discount_percentage: 50,
-        duration_days: 30,
-        description: 'Get full access to all premium content for 30 days',
-        formatted: {
-          original_price: 'EGP 600',
-          discounted_price: 'EGP 300',
-        },
-      });
-    }
-  };
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
@@ -194,13 +196,26 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     });
   };
 
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
+  const handleLogout = async () => {
+    try {
+      // Clear all React Query cache to prevent stale data and API calls
+      queryClient.clear();
+
+      if (onLogout) {
+        await onLogout();
+      }
+
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force logout even if API call fails
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      queryClient.clear();
+      navigate('/auth');
     }
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    navigate('/login');
   };
 
   return (

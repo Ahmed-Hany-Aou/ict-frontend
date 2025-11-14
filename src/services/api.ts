@@ -32,6 +32,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const url = error.config?.url || '';
+      const currentPath = window.location.pathname;
 
       // Don't redirect if it's a login/register/forgot-password attempt
       // These endpoints are expected to return 401 for wrong credentials
@@ -39,12 +40,25 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      // For other 401 errors (expired/invalid token during authenticated requests)
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
+      // Don't redirect if we're already on auth page or during logout
+      // This prevents infinite loops and multiple redirects
+      if (currentPath === '/auth' || url.includes('/logout')) {
+        return Promise.reject(error);
+      }
 
-      // Redirect to auth page
-      window.location.href = '/auth';
+      // For other 401 errors (expired/invalid token during authenticated requests)
+      // Only logout once to prevent multiple redirects
+      const hasToken = localStorage.getItem('auth_token');
+      if (hasToken) {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+
+        // Redirect to auth page only if we have a token (prevents double redirect)
+        setTimeout(() => {
+          window.location.href = '/auth';
+        }, 100);
+      }
+
       return Promise.reject(error);
     }
 
