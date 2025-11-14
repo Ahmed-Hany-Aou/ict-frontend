@@ -236,7 +236,7 @@ export default function ProgressPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-blue-600">
-                        {chapter.progress_percentage}%
+                        {Math.round(chapter.progress_percentage)}%
                       </div>
                       <div className={`text-xs font-medium ${
                         chapter.status === 'completed' ? 'text-green-600' :

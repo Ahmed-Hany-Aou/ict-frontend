@@ -247,7 +247,7 @@ export default function Chapters() {
                         <div className="flex justify-between items-center mb-1.5 sm:mb-2">
                           <span className="text-xs font-medium text-gray-600">Progress</span>
                           <span className="text-xs font-bold text-blue-600">
-                            {chapter.progress_percentage}%
+                            {Math.round(chapter.progress_percentage)}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">

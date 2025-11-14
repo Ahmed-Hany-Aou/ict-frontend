@@ -237,7 +237,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               <BookOpen className="text-blue-700" size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold">ICT Platform</h2>
+              <h2 className="text-xl font-bold">WADHA?! Platform</h2>
               <p className="text-xs text-blue-200">Learning System</p>
             </div>
           </div>

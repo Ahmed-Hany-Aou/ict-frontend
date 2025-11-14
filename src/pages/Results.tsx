@@ -271,7 +271,7 @@ export default function Results() {
                       <div className={`text-3xl font-bold ${
                         result.passed ? 'text-green-600' : 'text-red-600'
                       }`}>
-                        {result.percentage}%
+                        {Math.round(result.percentage)}%
                       </div>
                       <div className="text-sm text-gray-600">
                         {result.score}/{result.total_questions} correct

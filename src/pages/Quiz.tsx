@@ -184,7 +184,7 @@ export default function Quiz() {
                 </div>
                 <div className="bg-indigo-50 rounded-lg p-4">
                   <p className="text-xs sm:text-sm text-gray-600">Percentage</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-indigo-600">{result.percentage}%</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-indigo-600">{Math.round(result.percentage)}%</p>
                 </div>
                 <div className={`${result.passed ? 'bg-green-50' : 'bg-yellow-50'} rounded-lg p-4`}>
                   <p className="text-xs sm:text-sm text-gray-600">Status</p>
