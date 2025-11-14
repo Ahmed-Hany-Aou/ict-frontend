@@ -62,14 +62,14 @@ const InstallButton: React.FC = () => {
 
     if (isAndroid) {
       message += '📱 Android:\n';
-      message += '• Find "Hany.Edu" icon on your home screen and tap it\n';
+      message += '• Find "WADHA" icon on your home screen and tap it\n';
       message += '• OR use the "Open app" button in your browser\'s address bar\n';
     } else if (isDesktop) {
       message += '💻 Desktop:\n';
       message += '• Click the app icon (🔗) in your browser\'s address bar\n';
-      message += '• OR find "Hany.Edu" in your Start Menu/Applications\n';
+      message += '• OR find "WADHA" in your Start Menu/Applications\n';
     } else {
-      message += '• Find "Hany.Edu" icon on your home screen\n';
+      message += '• Find "WADHA" icon on your home screen\n';
       message += '• Tap it to open the app\n';
     }
 

@@ -140,7 +140,7 @@ export default function About() {
                 <BookOpen className="text-blue-600" size={32} />
               </div>
               <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-3 sm:mb-4 px-2">
-                Welcome to ICT Learning Platform
+                Welcome to WADHA?! Learning Platform
               </h1>
               <p className="text-base sm:text-xl text-blue-100 max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
                 A modern, interactive learning platform designed to help students master Information and Communication Technology concepts through engaging content and hands-on practice.
