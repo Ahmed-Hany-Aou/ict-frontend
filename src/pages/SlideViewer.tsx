@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, BookOpen, CheckCircle, Home, Award, ChevronDown, Loader, PlayCircle, Calendar, Video, ExternalLink } from 'lucide-react';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '../services/api'
 //import { Calendar, Video, ExternalLink } from 'lucide-react';
 
@@ -31,6 +32,7 @@ interface Slide {
 }
 
 export default function SlideViewer() {
+  const queryClient = useQueryClient();
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [slides, setSlides] = useState<Slide[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -47,6 +49,32 @@ export default function SlideViewer() {
   console.log('Raw id from URL:', id);
   const chapterIdNumber = parseInt(id || '1', 10);
   console.log('Parsed chapterIdNumber:', chapterIdNumber);
+
+  // Mutation for completing a slide
+  const completeSlideMutation = useMutation({
+    mutationFn: (slideId: number) => api.post(`/slides/${slideId}/complete`),
+    onSuccess: () => {
+      // Invalidate chapters and user progress to reflect updated progress
+      queryClient.invalidateQueries({ queryKey: ['chapters'] });
+      queryClient.invalidateQueries({ queryKey: ['user-progress'] });
+    },
+    onError: (err) => {
+      console.log('Could not save slide progress:', err);
+    }
+  });
+
+  // Mutation for completing a chapter
+  const completeChapterMutation = useMutation({
+    mutationFn: async (data: { slideId: number; chapterId: number }) => {
+      await api.post(`/slides/${data.slideId}/complete`);
+      return await api.post(`/chapters/${data.chapterId}/complete`);
+    },
+    onSuccess: () => {
+      // Invalidate all related queries
+      queryClient.invalidateQueries({ queryKey: ['chapters'] });
+      queryClient.invalidateQueries({ queryKey: ['user-progress'] });
+    }
+  });
 
   useEffect(() => {
     loadChapterData();
@@ -132,14 +160,10 @@ export default function SlideViewer() {
     }, 300);
   }, [currentSlideIndex, slides]);
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (currentSlideIndex < slides.length - 1) {
-      // Try to mark current slide as completed
-      try {
-        await api.post(`/slides/${currentSlide.id}/complete`);
-      } catch (err) {
-        console.log('Could not save progress:', err);
-      }
+      // Mark current slide as completed (with cache invalidation)
+      completeSlideMutation.mutate(currentSlide.id);
       navigateToSlide(currentSlideIndex + 1);
     }
   };
@@ -185,21 +209,24 @@ export default function SlideViewer() {
   const handleCompleteChapter = async () => {
     // ...
     try {
-      setChapterCompleted(true); 
-      
-      await api.post(`/slides/${currentSlide.id}/complete`);
-      const response = await api.post(`/chapters/${chapterIdNumber}/complete`);
-      
+      setChapterCompleted(true);
+
+      // Use mutation for chapter completion (with automatic cache invalidation)
+      const response = await completeChapterMutation.mutateAsync({
+        slideId: currentSlide.id,
+        chapterId: chapterIdNumber
+      });
+
       console.log('Chapter completion response:', response.data);
-      
+
       const allCompleted = new Set(slides.map((_, idx) => idx));
       setCompletedSlides(allCompleted);
-      
+
       // ----------------------------------------------
       // 👇 REMOVE THIS LINE
       // ----------------------------------------------
       // alert('🎉 Congratulations! You have completed Chapter 1!');
-      
+
       // Now this timer will start immediately
       setTimeout(() => {
         window.location.href = '/dashboard';

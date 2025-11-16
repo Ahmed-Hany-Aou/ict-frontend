@@ -1,6 +1,7 @@
 // src/components/PaymentUploadForm.tsx
 import React, { useState, useEffect } from 'react';
 import { Upload, CheckCircle, AlertCircle, Loader, X } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import PremiumService from '../services/premiumService';
 import { usePremium } from '../context/PremiumContext';
 
@@ -14,6 +15,7 @@ export const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
   onSuccess,
 }) => {
   const { refreshPremiumStatus } = usePremium();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     payment_reference: '',
     mobile_number: '', // Will hold the 10 digits AFTER +20
@@ -146,6 +148,12 @@ export const PaymentUploadForm: React.FC<PaymentUploadFormProps> = ({
 
       setSuccess(true);
       await refreshPremiumStatus();
+
+      // Invalidate queries to refresh premium-related content
+      queryClient.invalidateQueries({ queryKey: ['chapters'] });
+      queryClient.invalidateQueries({ queryKey: ['quizzes'] });
+      queryClient.invalidateQueries({ queryKey: ['pricing'] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
 
       // --- NO CHANGE --- This part already works as you want.
       // It stays on the success screen until manually closed.
