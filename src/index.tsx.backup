@@ -3,17 +3,6 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
 
-// CRITICAL: Unregister any service workers to prevent caching issues
-// This ensures fresh data is always fetched from the server
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(registrations) {
-    for(let registration of registrations) {
-      registration.unregister();
-      console.log('Service worker unregistered to prevent caching');
-    }
-  });
-}
-
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
