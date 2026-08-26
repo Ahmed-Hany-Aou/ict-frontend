@@ -18,21 +18,39 @@ const queryClient = new QueryClient({
   },
 });
 
+// Helper to gracefully retry loading chunks on network/deployment updates
+const lazyWithRetry = (componentImport: () => Promise<any>) =>
+  lazy(async () => {
+    try {
+      return await componentImport();
+    } catch (error) {
+      console.warn('Chunk load failed, retrying page import...', error);
+      // If it fails once due to a hot-reload / new chunk hash, retry once
+      try {
+        return await componentImport();
+      } catch (retryError) {
+        // As a last resort on chunk load error, reload page to get fresh assets
+        window.location.reload();
+        throw retryError;
+      }
+    }
+  });
+
 // Lazy load all page components for better performance
-const AuthPages = lazy(() => import('./AuthPages'));
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Chapters = lazy(() => import('./pages/Chapters'));
-const ChapterViewer = lazy(() => import('./pages/ChapterViewer'));
-const SlideViewer = lazy(() => import('./pages/SlideViewer'));
-const Quiz = lazy(() => import('./pages/Quiz'));
-const Quizzes = lazy(() => import('./pages/Quizzes'));
-const Results = lazy(() => import('./pages/Results'));
-const QuizResultDetail = lazy(() => import('./pages/QuizResultDetail'));
-const Progress = lazy(() => import('./pages/Progress'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Contact = lazy(() => import('./pages/Contact'));
-const InstallGuide = lazy(() => import('./pages/InstallGuide'));
-const About = lazy(() => import('./pages/About'));
+const AuthPages = lazyWithRetry(() => import('./AuthPages'));
+const Dashboard = lazyWithRetry(() => import('./pages/Dashboard'));
+const Chapters = lazyWithRetry(() => import('./pages/Chapters'));
+const ChapterViewer = lazyWithRetry(() => import('./pages/ChapterViewer'));
+const SlideViewer = lazyWithRetry(() => import('./pages/SlideViewer'));
+const Quiz = lazyWithRetry(() => import('./pages/Quiz'));
+const Quizzes = lazyWithRetry(() => import('./pages/Quizzes'));
+const Results = lazyWithRetry(() => import('./pages/Results'));
+const QuizResultDetail = lazyWithRetry(() => import('./pages/QuizResultDetail'));
+const Progress = lazyWithRetry(() => import('./pages/Progress'));
+const Profile = lazyWithRetry(() => import('./pages/Profile'));
+const Contact = lazyWithRetry(() => import('./pages/Contact'));
+const InstallGuide = lazyWithRetry(() => import('./pages/InstallGuide'));
+const About = lazyWithRetry(() => import('./pages/About'));
 
 // Loading fallback component
 const LoadingFallback = () => (
