@@ -26,7 +26,10 @@
       "Bash(curl:*)",
       "Bash(php test_chapters.php:*)",
       "Bash(find:*)",
-      "Bash(php test_api.php:*)"
+      "Bash(php test_api.php:*)",
+      "Bash(npm install:*)",
+      "Bash(php check_passwords.php:*)",
+      "Bash(php update_auth.php:*)"
     ],
     "deny": [],
     "ask": []

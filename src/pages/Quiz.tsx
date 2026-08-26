@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle, XCircle, Award, RotateCcw, Home, Loader, AlertCircle, Clock } from 'lucide-react';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import api from '../services/api';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
@@ -31,6 +32,7 @@ interface QuizResult {
 export default function Quiz() {
   const { quizId } = useParams<{ quizId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
@@ -42,6 +44,31 @@ export default function Quiz() {
   const [showExplanations, setShowExplanations] = useState(false);
   const [startTime] = useState(Date.now());
   const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Mutation for quiz submission
+  const submitQuizMutation = useMutation({
+    mutationFn: (data: { quizId: number; answers: any; questions: any; timeTaken: number }) =>
+      api.post(`/quizzes/${data.quizId}/submit`, {
+        answers: data.answers,
+        questions: data.questions,
+        time_taken: data.timeTaken
+      }),
+    onSuccess: (response) => {
+      // Update local state
+      setResult(response.data.result);
+      setIsSubmitted(true);
+      setShowExplanations(true);
+
+      // Invalidate all related caches to reflect new quiz results and updated progress
+      queryClient.invalidateQueries({ queryKey: ['quiz-results'] });
+      queryClient.invalidateQueries({ queryKey: ['user-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['quizzes'] });
+    },
+    onError: (err: any) => {
+      console.error('Error submitting quiz:', err);
+      alert('Failed to submit quiz. Please try again.');
+    }
+  });
 
   useEffect(() => {
     fetchQuiz();
@@ -80,7 +107,7 @@ export default function Quiz() {
     }
   };
 
-  const handleSubmitQuiz = async () => {
+  const handleSubmitQuiz = () => {
     if (!quiz) return;
 
     // Check if all questions are answered
@@ -90,23 +117,16 @@ export default function Quiz() {
       return;
     }
 
-    try {
-      // Calculate time taken in seconds
-      const timeTaken = Math.floor((Date.now() - startTime) / 1000);
+    // Calculate time taken in seconds
+    const timeTaken = Math.floor((Date.now() - startTime) / 1000);
 
-      const response = await api.post(`/quizzes/${quiz.id}/submit`, {
-        answers: selectedAnswers,
-        questions: quiz.questions, // Send the shuffled questions for accurate scoring
-        time_taken: timeTaken
-      });
-
-      setResult(response.data.result);
-      setIsSubmitted(true);
-      setShowExplanations(true);
-    } catch (err: any) {
-      console.error('Error submitting quiz:', err);
-      alert('Failed to submit quiz. Please try again.');
-    }
+    // Submit quiz using mutation (with automatic cache invalidation)
+    submitQuizMutation.mutate({
+      quizId: quiz.id,
+      answers: selectedAnswers,
+      questions: quiz.questions, // Send the shuffled questions for accurate scoring
+      timeTaken
+    });
   };
 
   const formatTime = (seconds: number) => {
@@ -184,7 +204,7 @@ export default function Quiz() {
                 </div>
                 <div className="bg-indigo-50 rounded-lg p-4">
                   <p className="text-xs sm:text-sm text-gray-600">Percentage</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-indigo-600">{result.percentage}%</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-indigo-600">{Math.round(result.percentage)}%</p>
                 </div>
                 <div className={`${result.passed ? 'bg-green-50' : 'bg-yellow-50'} rounded-lg p-4`}>
                   <p className="text-xs sm:text-sm text-gray-600">Status</p>

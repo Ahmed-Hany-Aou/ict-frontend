@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import api from '../services/api';
+import { ProgressStatsSkeleton } from '../components/Skeleton';
 import {
   TrendingUp,
   BookOpen,
@@ -35,50 +38,44 @@ interface ChapterProgress {
 }
 
 export default function ProgressPage() {
-  const [progress, setProgress] = useState<Progress | null>(null);
-  const [chapters, setChapters] = useState<ChapterProgress[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch progress with React Query
+  const { data: progress = null, isLoading: progressLoading } = useQuery<Progress | null>({
+    queryKey: ['user-progress'],
+    queryFn: async () => {
+      const response = await api.get('/user/progress');
+      return response.data.statistics || null;
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+  });
 
-  useEffect(() => {
-    loadProgress();
-  }, []);
+  // Fetch chapters with React Query (reuse from dashboard)
+  const { data: chapters = [], isLoading: chaptersLoading, error } = useQuery<ChapterProgress[]>({
+    queryKey: ['chapters'],
+    queryFn: async () => {
+      const response = await api.get('/chapters');
+      return response.data.chapters || [];
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+  });
 
-  const loadProgress = async () => {
-    try {
-      setLoading(true);
-      const [progressResponse, chaptersResponse] = await Promise.all([
-        api.get('/user/progress'),
-        api.get('/chapters')
-      ]);
+  const loading = progressLoading || chaptersLoading;
 
-      setProgress(progressResponse.data.statistics || null);
-      setChapters(chaptersResponse.data.chapters || []);
-      setError(null);
-    } catch (err) {
-      console.error('Error loading progress:', err);
-      setError('Failed to load progress data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Show skeleton while loading
   if (loading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
-              <p className="text-gray-600">Loading progress...</p>
-            </div>
+          <TopBar title="Progress" subtitle="Track your learning journey" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <ProgressStatsSkeleton />
           </div>
         </div>
       </div>
     );
   }
 
+  // Show error state
   if (error) {
     return (
       <div className="flex min-h-screen bg-gray-50">
@@ -86,9 +83,9 @@ export default function ProgressPage() {
         <div className="flex-1 lg:ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-red-600 mb-4">Failed to load progress</p>
               <button
-                onClick={loadProgress}
+                onClick={() => window.location.reload()}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
               >
                 Retry
@@ -105,13 +102,7 @@ export default function ProgressPage() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Your Progress</h1>
-            <p className="text-gray-600 mt-1">Track your learning journey</p>
-          </div>
-        </div>
+        <TopBar title="Progress" subtitle="Track your learning journey" />
 
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -234,7 +225,7 @@ export default function ProgressPage() {
                     </div>
                     <div className="text-right">
                       <div className="text-2xl font-bold text-blue-600">
-                        {chapter.progress_percentage}%
+                        {Math.round(chapter.progress_percentage)}%
                       </div>
                       <div className={`text-xs font-medium ${
                         chapter.status === 'completed' ? 'text-green-600' :

@@ -807,7 +807,7 @@ const handleForgotSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
             <div className="auth-header-content">
               <BookOpen className="auth-icon" size={35} />
               <div>
-                <div className="auth-title">ICT Interactive</div>
+                <div className="auth-title">WADHA?! Platform</div>
               </div>
             </div>
             {currentPage === 'forgot' && (

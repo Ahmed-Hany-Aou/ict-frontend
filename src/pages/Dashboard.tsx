@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import PremiumModal from '../components/PremiumModal';
 import api from '../services/api';
+import { DashboardSkeleton } from '../components/Skeleton';
 import {
   BookOpen,
   TrendingUp,
@@ -47,60 +50,53 @@ interface Progress {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { isPremium, loading: premiumLoading } = usePremium();
-  const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [progress, setProgress] = useState<Progress | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedLockedChapter, setSelectedLockedChapter] = useState<Chapter | null>(null);
-  const [pricing, setPricing] = useState<PricingData | null>(null);
 
-  useEffect(() => {
-    loadDashboardData();
-    loadPricing();
-  }, []);
+  // Fetch chapters with React Query
+  const { data: chapters = [], isLoading: chaptersLoading } = useQuery<Chapter[]>({
+    queryKey: ['chapters'],
+    queryFn: async () => {
+      const response = await api.get('/chapters');
+      return response.data.chapters || [];
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+  });
 
-  const loadDashboardData = async () => {
-    try {
-      setLoading(true);
-      const [chaptersResponse, progressResponse] = await Promise.all([
-        api.get('/chapters'),
-        api.get('/user/progress')
-      ]);
+  // Fetch progress with React Query
+  const { data: progress = null, isLoading: progressLoading } = useQuery<Progress | null>({
+    queryKey: ['user-progress'],
+    queryFn: async () => {
+      const response = await api.get('/user/progress');
+      return response.data.statistics || null;
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+  });
 
-      setChapters(chaptersResponse.data.chapters || []);
-      setProgress(progressResponse.data.statistics || null);
-      setError(null);
-    } catch (err) {
-      console.error('Error loading dashboard:', err);
-      setError('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadPricing = async () => {
-    try {
+  // Fetch pricing with React Query
+  const { data: pricing } = useQuery<PricingData>({
+    queryKey: ['pricing'],
+    queryFn: async () => {
       const response = await PremiumService.getPricing();
-      setPricing(response.data);
-    } catch (err) {
-      console.error('Error loading pricing:', err);
-      // Use fallback pricing if API fails
-      setPricing({
-        currency: 'EGP',
-        currency_symbol: 'EGP',
-        original_price: 500,
-        discounted_price: 300,
-        discount_percentage: 40,
-        duration_days: 30,
-        description: 'Get full access to all premium content for 30 days',
-        formatted: {
-          original_price: 'EGP 500',
-          discounted_price: 'EGP 300',
-        },
-      });
-    }
-  };
+      return response.data;
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+    placeholderData: {
+      currency: 'EGP',
+      currency_symbol: 'EGP',
+      original_price: 500,
+      discounted_price: 300,
+      discount_percentage: 40,
+      duration_days: 30,
+      description: 'Get full access to all premium content for 30 days',
+      formatted: {
+        original_price: 'EGP 500',
+        discounted_price: 'EGP 300',
+      },
+    },
+  });
+
+  const loading = chaptersLoading || progressLoading;
 
   const handleChapterClick = (chapter: Chapter) => {
     const isLocked = chapter.is_premium && !isPremium;
@@ -141,38 +137,14 @@ export default function Dashboard() {
     }
   };
 
+  // Show skeleton while loading
   if (loading || premiumLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
-              <p className="text-gray-600">Loading dashboard...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex min-h-screen bg-gray-50">
-        <Sidebar />
-        <div className="flex-1 lg:ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
-              <p className="text-red-600 mb-4">{error}</p>
-              <button
-                onClick={loadDashboardData}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
+          <TopBar title="Dashboard" subtitle="Track your learning progress" />
+          <DashboardSkeleton />
         </div>
       </div>
     );
@@ -183,70 +155,64 @@ export default function Dashboard() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-1">Track your learning progress</p>
-          </div>
-        </div>
+        <TopBar title="Dashboard" subtitle="Track your learning progress" />
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {/* Progress Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
             {/* Overall Progress */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <TrendingUp size={32} />
-                <span className="text-3xl font-bold">{progress?.overall_progress}%</span>
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 sm:p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <TrendingUp size={24} className="sm:w-8 sm:h-8" />
+                <span className="text-2xl sm:text-3xl font-bold">{progress?.overall_progress}%</span>
               </div>
-              <h3 className="text-sm font-medium opacity-90">Overall Progress</h3>
+              <h3 className="text-xs sm:text-sm font-medium opacity-90">Overall Progress</h3>
             </div>
 
             {/* Chapters */}
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <BookOpen size={32} />
-                <span className="text-3xl font-bold">{progress?.completed_chapters}/{progress?.total_chapters}</span>
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 sm:p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <BookOpen size={24} className="sm:w-8 sm:h-8" />
+                <span className="text-2xl sm:text-3xl font-bold">{progress?.completed_chapters}/{progress?.total_chapters}</span>
               </div>
-              <h3 className="text-sm font-medium opacity-90">Chapters Completed</h3>
+              <h3 className="text-xs sm:text-sm font-medium opacity-90">Chapters Completed</h3>
             </div>
 
             {/* Slides */}
-            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <CheckCircle size={32} />
-                <span className="text-3xl font-bold">{progress?.completed_slides}/{progress?.total_slides}</span>
+            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-4 sm:p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <CheckCircle size={24} className="sm:w-8 sm:h-8" />
+                <span className="text-2xl sm:text-3xl font-bold">{progress?.completed_slides}/{progress?.total_slides}</span>
               </div>
-              <h3 className="text-sm font-medium opacity-90">Slides Completed</h3>
+              <h3 className="text-xs sm:text-sm font-medium opacity-90">Slides Completed</h3>
             </div>
 
             {/* Quizzes */}
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <Award size={32} />
-                <span className="text-3xl font-bold">{progress?.passed_quizzes}/{progress?.total_quizzes}</span>
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-4 sm:p-6 rounded-xl shadow-lg">
+              <div className="flex items-center justify-between mb-2 sm:mb-4">
+                <Award size={24} className="sm:w-8 sm:h-8" />
+                <span className="text-2xl sm:text-3xl font-bold">{progress?.passed_quizzes}/{progress?.total_quizzes}</span>
               </div>
-              <h3 className="text-sm font-medium opacity-90">Quizzes Passed</h3>
+              <h3 className="text-xs sm:text-sm font-medium opacity-90">Quizzes Passed</h3>
             </div>
           </div>
 
           {/* Weighted Progress Bars */}
-          <div className="bg-white p-6 rounded-xl shadow mb-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <BarChart3 size={24} />
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow mb-6 sm:mb-8">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <BarChart3 size={20} className="sm:w-6 sm:h-6" />
               Progress Breakdown
             </h2>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Slides Progress (60%) */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={18} className="text-green-600" />
-                    <span className="font-medium text-gray-700">Slides Progress</span>
-                    <span className="text-sm text-gray-500">(60% weight)</span>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <CheckCircle size={16} className="text-green-600 sm:w-[18px] sm:h-[18px]" />
+                    <span className="text-sm sm:text-base font-medium text-gray-700">Slides Progress</span>
+                    <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">(60% weight)</span>
                   </div>
                   <span className="text-sm font-semibold text-gray-900">{progress?.slide_progress}%</span>
                 </div>
@@ -261,10 +227,10 @@ export default function Dashboard() {
               {/* Quiz Progress (40%) */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-2">
-                    <Target size={18} className="text-orange-600" />
-                    <span className="font-medium text-gray-700">Quiz Progress</span>
-                    <span className="text-sm text-gray-500">(40% weight)</span>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <Target size={16} className="text-orange-600 sm:w-[18px] sm:h-[18px]" />
+                    <span className="text-sm sm:text-base font-medium text-gray-700">Quiz Progress</span>
+                    <span className="text-xs sm:text-sm text-gray-500 hidden sm:inline">(40% weight)</span>
                   </div>
                   <span className="text-sm font-semibold text-gray-900">{progress?.quiz_progress}%</span>
                 </div>
@@ -277,13 +243,13 @@ export default function Dashboard() {
               </div>
 
               {/* Overall Progress */}
-              <div className="pt-4 border-t">
+              <div className="pt-3 sm:pt-4 border-t">
                 <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp size={18} className="text-blue-600" />
-                    <span className="font-bold text-gray-900">Overall Progress</span>
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <TrendingUp size={16} className="text-blue-600 sm:w-[18px] sm:h-[18px]" />
+                    <span className="text-sm sm:text-base font-bold text-gray-900">Overall Progress</span>
                   </div>
-                  <span className="text-lg font-bold text-blue-600">{progress?.overall_progress}%</span>
+                  <span className="text-base sm:text-lg font-bold text-blue-600">{progress?.overall_progress}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-4">
                   <div
@@ -296,8 +262,8 @@ export default function Dashboard() {
           </div>
 
           {/* Chapters List */}
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Your Chapters</h2>
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4 sm:mb-6">Your Chapters</h2>
 
             {chapters.length === 0 ? (
               <div className="text-center py-8">
@@ -305,7 +271,7 @@ export default function Dashboard() {
                 <p className="text-gray-500">No chapters available</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {chapters.map((chapter) => {
                   const isLocked = chapter.is_premium && !isPremium;
                   const isScheduled = chapter.is_scheduled || false;
@@ -314,7 +280,7 @@ export default function Dashboard() {
                     <div
                       key={chapter.id}
                       onClick={() => !isScheduled && handleChapterClick(chapter)}
-                      className={`border-2 rounded-lg p-4 transition-all group ${
+                      className={`border-2 rounded-lg p-3 sm:p-4 transition-all group ${
                         isScheduled
                           ? 'border-orange-300 opacity-80 cursor-not-allowed'
                           : isLocked
@@ -322,26 +288,48 @@ export default function Dashboard() {
                           : 'border-gray-200 hover:border-blue-400 hover:shadow-lg cursor-pointer'
                       }`}
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 pr-4">
-                          <div className="flex items-center gap-3 mb-2">
-                            <span className="text-2xl">
+                      <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
+                        <div className="flex-1 w-full">
+                          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                            <span className="text-xl sm:text-2xl flex-shrink-0">
                               {isScheduled ? '⏰' : isLocked ? '🔒' : chapter.chapter_number === 1 ? '💻' : '📚'}
                             </span>
-                            <h3 className={`text-lg font-semibold ${
+                            <h3 className={`text-base sm:text-lg font-semibold ${
                               isScheduled ? 'text-orange-700' : isLocked ? 'text-gray-700' : 'text-gray-900 group-hover:text-blue-600'
                             } transition-colors`}>
                               Chapter {chapter.chapter_number}: {chapter.title}
                             </h3>
                           </div>
-                          <p className="text-sm text-gray-600 mb-3">{chapter.description}</p>
+                          <p className="text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3 line-clamp-2">{chapter.description}</p>
 
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
-                            <span>{chapter.completed_slides}/{chapter.slides_count} slides completed</span>
-                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status, isScheduled)}`}>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2 sm:mb-3">
+                            <span>{chapter.completed_slides}/{chapter.slides_count} slides</span>
+                            <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(chapter.status, isScheduled)}`}>
                               {getStatusLabel(chapter.status, isScheduled)}
                             </span>
                           </div>
+
+                          {/* Scheduled Message */}
+                          {isScheduled && chapter.publish_at && (
+                            <div className="mb-2 sm:mb-3 bg-orange-50 border border-orange-200 rounded-lg p-2 sm:p-3 flex items-start gap-2">
+                              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <p className="text-xs text-orange-700">
+                                Available on {new Date(chapter.publish_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Locked Message */}
+                          {isLocked && !isScheduled && (
+                            <div className="mb-2 sm:mb-3 bg-yellow-50 border border-yellow-200 rounded-lg p-2 sm:p-3 flex items-start gap-2">
+                              <Lock size={14} className="text-yellow-600 flex-shrink-0 mt-0.5 sm:w-4 sm:h-4" />
+                              <p className="text-xs text-yellow-700">
+                                Premium content - Upgrade to access
+                              </p>
+                            </div>
+                          )}
 
                           {/* Chapter Progress Bar */}
                           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -354,13 +342,13 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                       {/* Button (click handler now opens modal) */}
+                       {/* Button */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             if (!isScheduled) handleChapterClick(chapter);
                           }}
-                          className={`ml-4 text-white px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 self-start ${
+                          className={`w-full sm:w-auto sm:ml-4 text-white px-4 py-2.5 sm:py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm sm:text-base ${
                             isScheduled
                               ? 'bg-orange-400 cursor-not-allowed'
                               : isLocked
@@ -374,7 +362,7 @@ export default function Dashboard() {
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
-                              Soon
+                              <span className="hidden sm:inline">Coming </span>Soon
                             </>
                           ) : isLocked ? (
                             <>

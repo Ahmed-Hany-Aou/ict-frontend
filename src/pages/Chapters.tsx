@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import api from '../services/api';
+import { ChaptersGridSkeleton } from '../components/Skeleton';
 import {
   BookOpen,
   Play,
@@ -34,54 +37,41 @@ interface Chapter {
 export default function Chapters() {
   const navigate = useNavigate();
   const { isPremium, loading: premiumLoading } = usePremium();
-  const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [selectedLockedChapter, setSelectedLockedChapter] = useState<Chapter | null>(null);
-  const [pricing, setPricing] = useState<PricingData | null>(null);
 
-  useEffect(() => {
-    loadChapters();
-    loadPricing();
-  }, []);
-
-  const loadChapters = async () => {
-    try {
-      setLoading(true);
+  // Fetch chapters with React Query
+  const { data: chapters = [], isLoading, error } = useQuery<Chapter[]>({
+    queryKey: ['chapters'],
+    queryFn: async () => {
       const response = await api.get('/chapters');
-      setChapters(response.data.chapters || []);
-      setError(null);
-    } catch (err) {
-      console.error('Error loading chapters:', err);
-      setError('Failed to load chapters');
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data.chapters || [];
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+  });
 
-  const loadPricing = async () => {
-    try {
+  // Fetch pricing with React Query
+  const { data: pricing } = useQuery<PricingData>({
+    queryKey: ['pricing'],
+    queryFn: async () => {
       const response = await PremiumService.getPricing();
-      setPricing(response.data);
-    } catch (err) {
-      console.error('Error loading pricing:', err);
-      // Use fallback pricing if API fails
-      setPricing({
-        currency: 'EGP',
-        currency_symbol: 'EGP',
-        original_price: 500,
-        discounted_price: 300,
-        discount_percentage: 40,
-        duration_days: 30,
-        description: 'Get full access to all premium content for 30 days',
-        formatted: {
-          original_price: 'EGP 500',
-          discounted_price: 'EGP 300',
-        },
-      });
-    }
-  };
+      return response.data;
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+    placeholderData: {
+      currency: 'EGP',
+      currency_symbol: 'EGP',
+      original_price: 500,
+      discounted_price: 300,
+      discount_percentage: 40,
+      duration_days: 30,
+      description: 'Get full access to all premium content for 30 days',
+      formatted: {
+        original_price: 'EGP 500',
+        discounted_price: 'EGP 300',
+      },
+    },
+  });
 
   const handleChapterClick = (chapter: Chapter) => {
     const isLocked = chapter.is_locked || (chapter.is_premium && !isPremium);
@@ -133,22 +123,22 @@ export default function Chapters() {
     }
   };
 
-  if (loading || premiumLoading) {
+  // Show skeleton while loading
+  if (isLoading || premiumLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
-              <p className="text-gray-600">Loading chapters...</p>
-            </div>
+          <TopBar title="Chapters" subtitle="Browse all available chapters" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <ChaptersGridSkeleton />
           </div>
         </div>
       </div>
     );
   }
 
+  // Show error state
   if (error) {
     return (
       <div className="flex min-h-screen bg-gray-50">
@@ -156,9 +146,9 @@ export default function Chapters() {
         <div className="flex-1 lg:ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
-              <p className="text-red-600 mb-4">{error}</p>
+              <p className="text-red-600 mb-4">Failed to load chapters</p>
               <button
-                onClick={loadChapters}
+                onClick={() => window.location.reload()}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
               >
                 Retry
@@ -175,16 +165,10 @@ export default function Chapters() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">All Chapters</h1>
-            <p className="text-gray-600 mt-1">Browse and access your learning materials</p>
-          </div>
-        </div>
+        <TopBar title="Chapters" subtitle="Browse all available chapters" />
 
         {/* Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           {chapters.length === 0 ? (
             <div className="bg-white rounded-xl shadow p-12 text-center">
               <BookOpen size={64} className="text-gray-300 mx-auto mb-4" />
@@ -192,7 +176,7 @@ export default function Chapters() {
               <p className="text-gray-500">Check back later for new learning content</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {chapters.map((chapter) => {
                 const isLocked = chapter.is_locked || (chapter.is_premium && !isPremium);
                 const isScheduled = chapter.is_scheduled || false;
@@ -210,7 +194,7 @@ export default function Chapters() {
                   >
                     {/* Header with status badge */}
                     <div
-                      className={`p-6 text-white relative ${
+                      className={`p-4 sm:p-6 text-white relative ${
                         isScheduled
                           ? 'bg-gradient-to-r from-orange-500 to-orange-600'
                           : isLocked
@@ -218,7 +202,7 @@ export default function Chapters() {
                           : 'bg-gradient-to-r from-blue-500 to-blue-600'
                       }`}
                     >
-                      <div className="absolute top-4 right-4 flex gap-2">
+                      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex gap-1 sm:gap-2">
                         {chapter.is_premium && <PremiumBadge variant="crown" size="sm" />}
                         {chapter.status === 'completed' && !isLocked && !isScheduled && (
                           <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
@@ -227,32 +211,32 @@ export default function Chapters() {
                           </div>
                         )}
                       </div>
-                      <div className="text-5xl mb-3">
+                      <div className="text-4xl sm:text-5xl mb-2 sm:mb-3">
                         {isScheduled ? '⏰' : isLocked ? '🔒' : chapter.chapter_number === 1 ? '💻' : '📚'}
                       </div>
-                      <h3 className="text-xl font-bold mb-1">
+                      <h3 className="text-lg sm:text-xl font-bold mb-1">
                         Chapter {chapter.chapter_number}
                       </h3>
-                      <p className={`text-sm ${isScheduled ? 'text-orange-100' : isLocked ? 'text-gray-200' : 'text-blue-100'}`}>
+                      <p className={`text-xs sm:text-sm ${isScheduled ? 'text-orange-100' : isLocked ? 'text-gray-200' : 'text-blue-100'}`}>
                         {chapter.slides_count} slides
                       </p>
                     </div>
 
                     {/* Body */}
-                    <div className="p-6">
-                      <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                    <div className="p-4 sm:p-6">
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
                         {chapter.title}
                       </h4>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 line-clamp-2">
                         {chapter.description}
                       </p>
 
                       {/* Progress */}
-                      <div className="mb-4">
-                        <div className="flex justify-between items-center mb-2">
+                      <div className="mb-3 sm:mb-4">
+                        <div className="flex justify-between items-center mb-1.5 sm:mb-2">
                           <span className="text-xs font-medium text-gray-600">Progress</span>
                           <span className="text-xs font-bold text-blue-600">
-                            {chapter.progress_percentage}%
+                            {Math.round(chapter.progress_percentage)}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -266,9 +250,9 @@ export default function Chapters() {
                       </div>
 
                       {/* Stats */}
-                      <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
+                      <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
                         <span className="flex items-center gap-1">
-                          <CheckCircle size={16} className="text-green-600" />
+                          <CheckCircle size={14} className="text-green-600 sm:w-4 sm:h-4" />
                           {chapter.completed_slides} done
                         </span>
                         <span
@@ -282,7 +266,7 @@ export default function Chapters() {
 
                       {/* Scheduled Message */}
                       {isScheduled && (
-                        <div className="mb-4 bg-orange-50 border border-orange-200 rounded-lg p-3 flex items-start gap-2">
+                        <div className="mb-3 sm:mb-4 bg-orange-50 border border-orange-200 rounded-lg p-2 sm:p-3 flex items-start gap-2">
                           <svg className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
@@ -294,8 +278,8 @@ export default function Chapters() {
 
                       {/* Locked Message */}
                       {isLocked && !isScheduled && (
-                        <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
-                          <Lock size={16} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+                        <div className="mb-3 sm:mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-2 sm:p-3 flex items-start gap-2">
+                          <Lock size={14} className="text-yellow-600 flex-shrink-0 mt-0.5 sm:w-4 sm:h-4" />
                           <p className="text-xs text-yellow-700">
                             Premium content - Upgrade to access
                           </p>
@@ -306,7 +290,7 @@ export default function Chapters() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleChapterClick(chapter)}
-                          className={`flex-1 px-4 py-2.5 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors ${
+                          className={`flex-1 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-sm sm:text-base font-semibold flex items-center justify-center gap-1.5 sm:gap-2 transition-colors ${
                             isScheduled
                               ? 'bg-orange-400 text-white cursor-not-allowed'
                               : isLocked
@@ -317,19 +301,19 @@ export default function Chapters() {
                         >
                           {isScheduled ? (
                             <>
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                               </svg>
-                              Coming Soon
+                              <span className="hidden sm:inline">Coming </span>Soon
                             </>
                           ) : isLocked ? (
                             <>
-                              <Lock size={16} />
+                              <Lock size={14} className="sm:w-4 sm:h-4" />
                               Upgrade
                             </>
                           ) : (
                             <>
-                              <Play size={16} />
+                              <Play size={14} className="sm:w-4 sm:h-4" />
                               {chapter.status === 'completed'
                                 ? 'Review'
                                 : chapter.status === 'in_progress'
@@ -340,7 +324,7 @@ export default function Chapters() {
                         </button>
                         <button
                           onClick={() => handleQuizClick(chapter)}
-                          className={`px-4 py-2.5 rounded-lg transition-colors flex items-center justify-center ${
+                          className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition-colors flex items-center justify-center ${
                             isScheduled || isLocked
                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                               : 'bg-orange-500 text-white hover:bg-orange-600'
@@ -348,7 +332,7 @@ export default function Chapters() {
                           title={isScheduled ? 'Coming soon' : isLocked ? 'Premium content' : 'Take Quiz'}
                           disabled={isScheduled || isLocked}
                         >
-                          <FileQuestion size={18} />
+                          <FileQuestion size={16} className="sm:w-[18px] sm:h-[18px]" />
                         </button>
                       </div>
                     </div>

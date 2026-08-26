@@ -1,5 +1,6 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import { Mail, MessageSquare, Send, Phone, MapPin } from 'lucide-react';
 
 export default function Contact() {
@@ -12,13 +13,7 @@ export default function Contact() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Contact Us</h1>
-            <p className="text-gray-600 mt-1">Get in touch with us for any questions or support</p>
-          </div>
-        </div>
+        <TopBar title="Contact" subtitle="Get in touch with us" />
 
         {/* Content */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

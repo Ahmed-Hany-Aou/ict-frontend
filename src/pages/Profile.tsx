@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Sidebar from '../components/Sidebar';
+import TopBar from '../components/TopBar';
 import api from '../services/api';
+import { Skeleton } from '../components/Skeleton';
 import {
   User,
   Mail,
@@ -36,36 +39,39 @@ interface UserStats {
 
 export default function Profile() {
   const { isPremium, premiumExpiresAt, daysRemaining, loading: premiumLoading } = usePremium();
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
 
+  // Fetch user data with React Query
+  const { data: user = null, isLoading: userLoading, error: userError } = useQuery<UserProfile | null>({
+    queryKey: ['user-profile'],
+    queryFn: async () => {
+      const response = await api.get('/user');
+      return response.data;
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+  });
+
+  // Set edit name when user data is loaded
   useEffect(() => {
-    loadProfile();
-  }, []);
-
-  const loadProfile = async () => {
-    try {
-      setLoading(true);
-      const [userResponse, progressResponse] = await Promise.all([
-        api.get('/user'),
-        api.get('/user/progress')
-      ]);
-
-      setUser(userResponse.data);
-      setStats(progressResponse.data.statistics || null);
-      setEditName(userResponse.data.name);
-      setError(null);
-    } catch (err) {
-      console.error('Error loading profile:', err);
-      setError('Failed to load profile');
-    } finally {
-      setLoading(false);
+    if (user && !editName) {
+      setEditName(user.name);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // Fetch user stats with React Query (reuse progress query)
+  const { data: stats = null, isLoading: statsLoading } = useQuery<UserStats | null>({
+    queryKey: ['user-progress'],
+    queryFn: async () => {
+      const response = await api.get('/user/progress');
+      return response.data.statistics || null;
+    },
+    staleTime: 0, // No cache - always fetch fresh data
+  });
+
+  const loading = userLoading || statsLoading;
+  const error = userError;
 
   const handleSave = async () => {
     try {
@@ -88,15 +94,28 @@ export default function Profile() {
     });
   };
 
+  // Show skeleton while loading
   if (loading || premiumLoading) {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-1 lg:ml-64">
-          <div className="flex items-center justify-center h-screen">
-            <div className="text-center">
-              <Loader className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
-              <p className="text-gray-600">Loading profile...</p>
+          <TopBar title="Profile" subtitle="Manage your account settings" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <Skeleton className="w-24 h-24 rounded-full mb-4" />
+                  <Skeleton className="w-48 h-6 mb-2" />
+                  <Skeleton className="w-64 h-4 mb-4" />
+                  <Skeleton className="w-32 h-4" />
+                </div>
+              </div>
+              <div>
+                <div className="bg-white rounded-xl shadow-lg p-6">
+                  <Skeleton className="w-full h-48" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -104,6 +123,7 @@ export default function Profile() {
     );
   }
 
+  // Show error state
   if (error || !user) {
     return (
       <div className="flex min-h-screen bg-gray-50">
@@ -111,9 +131,9 @@ export default function Profile() {
         <div className="flex-1 lg:ml-64">
           <div className="flex items-center justify-center h-screen">
             <div className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md">
-              <p className="text-red-600 mb-4">{error || 'User not found'}</p>
+              <p className="text-red-600 mb-4">{error ? 'Failed to load profile' : 'User not found'}</p>
               <button
-                onClick={loadProfile}
+                onClick={() => window.location.reload()}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
               >
                 Retry
@@ -130,13 +150,7 @@ export default function Profile() {
       <Sidebar />
 
       <div className="flex-1 lg:ml-64">
-        {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-            <p className="text-gray-600 mt-1">Manage your account information</p>
-          </div>
-        </div>
+        <TopBar title="Profile" subtitle="Manage your account settings" />
 
         {/* Content */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

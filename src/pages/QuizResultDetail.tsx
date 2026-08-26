@@ -170,8 +170,7 @@ export default function QuizResultDetail() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className={`bg-gradient-to-br ${getGradeColor(result.percentage)} text-white p-6 rounded-xl`}>
                 <Award size={32} className="mb-2" />
-                <div className="text-3xl font-bold">{result.percentage}%</div>
-                <div className="text-sm opacity-90">Score</div>
+                <div className="text-3xl font-bold">{Math.round(result.percentage)}%</div>                <div className="text-sm opacity-90">Score</div>
               </div>
 
               <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl">

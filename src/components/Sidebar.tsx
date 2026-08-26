@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import api from '../services/api';
 import InstallButton from './InstallButton';
 import {
   Home,
@@ -16,7 +18,8 @@ import {
   Sparkles,
   Mail,
   Download,
-  Smartphone
+  Smartphone,
+  Info
 } from 'lucide-react';
 import { usePremium } from '../context/PremiumContext';
 import PremiumModal from './PremiumModal';
@@ -29,15 +32,41 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const { isPremium, premiumExpiresAt, daysRemaining, loading: premiumLoading } = usePremium();
-  const [pricing, setPricing] = useState<PricingData | null>(null);
+
+  // Use React Query to fetch and cache pricing - this prevents multiple API calls
+  // Only fetch when user is authenticated to prevent unnecessary API calls
+  const isAuthenticated = !!localStorage.getItem('auth_token');
+  const { data: pricing } = useQuery<PricingData>({
+    queryKey: ['pricing'],
+    queryFn: async () => {
+      const response = await PremiumService.getPricing();
+      return response.data;
+    },
+    enabled: isAuthenticated, // Only fetch when authenticated
+    staleTime: 30 * 60 * 1000, // 30 minutes - pricing doesn't change often
+    gcTime: 60 * 60 * 1000, // Keep in cache for 1 hour
+    retry: 1,
+    placeholderData: {
+      currency: 'EGP',
+      currency_symbol: 'EGP',
+      original_price: 600,
+      discounted_price: 300,
+      discount_percentage: 50,
+      duration_days: 30,
+      description: 'Get full access to all premium content for 30 days',
+      formatted: {
+        original_price: 'EGP 600',
+        discounted_price: 'EGP 300',
+      },
+    },
+  });
 
   useEffect(() => {
-    loadPricing();
-
     // Check if running in standalone mode (PWA installed and running)
     const checkStandalone = () => {
       const standalone =
@@ -59,35 +88,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     };
   }, []);
 
-  const loadPricing = async () => {
-    try {
-      const response = await PremiumService.getPricing();
-      setPricing(response.data);
-    } catch (err) {
-      console.error('Error loading pricing:', err);
-      // Use fallback pricing if API fails
-      setPricing({
-        currency: 'EGP',
-        currency_symbol: 'EGP',
-        original_price: 600,
-        discounted_price: 300,
-        discount_percentage: 50,
-        duration_days: 30,
-        description: 'Get full access to all premium content for 30 days',
-        formatted: {
-          original_price: 'EGP 600',
-          discounted_price: 'EGP 300',
-        },
-      });
-    }
-  };
-
   const menuItems = [
     { icon: Home, label: 'Dashboard', path: '/dashboard' },
     { icon: BookOpen, label: 'Chapters', path: '/chapters' },
     { icon: ClipboardList, label: 'Quizzes', path: '/quizzes' },
     { icon: Award, label: 'Results', path: '/results' },
     { icon: BarChart3, label: 'Progress', path: '/progress' },
+    { icon: Info, label: 'About', path: '/about' },
     { icon: Mail, label: 'Contact', path: '/contact' },
   ];
 
@@ -96,13 +103,119 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
     setIsOpen(false);
   };
 
-  const handleLogout = () => {
-    if (onLogout) {
-      onLogout();
+  // Prefetch data on hover for instant navigation
+  const prefetchChapters = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['chapters'],
+      queryFn: async () => {
+        const response = await api.get('/chapters');
+        return response.data.chapters || [];
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const prefetchQuizzes = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['quizzes'],
+      queryFn: async () => {
+        const response = await api.get('/quizzes');
+        return response.data.quizzes || {};
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const prefetchDashboard = () => {
+    // Prefetch both chapters and progress
+    queryClient.prefetchQuery({
+      queryKey: ['chapters'],
+      queryFn: async () => {
+        const response = await api.get('/chapters');
+        return response.data.chapters || [];
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['user-progress'],
+      queryFn: async () => {
+        const response = await api.get('/user/progress');
+        return response.data.statistics || null;
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+  };
+
+  const prefetchResults = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['quiz-results'],
+      queryFn: async () => {
+        const response = await api.get('/quiz/results');
+        return response.data.results || [];
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+  };
+
+  const prefetchProgress = () => {
+    // Prefetch both progress and chapters
+    queryClient.prefetchQuery({
+      queryKey: ['user-progress'],
+      queryFn: async () => {
+        const response = await api.get('/user/progress');
+        return response.data.statistics || null;
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['chapters'],
+      queryFn: async () => {
+        const response = await api.get('/chapters');
+        return response.data.chapters || [];
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  };
+
+  const prefetchProfile = () => {
+    queryClient.prefetchQuery({
+      queryKey: ['user-profile'],
+      queryFn: async () => {
+        const response = await api.get('/user');
+        return response.data;
+      },
+      staleTime: 10 * 60 * 1000,
+    });
+    queryClient.prefetchQuery({
+      queryKey: ['user-progress'],
+      queryFn: async () => {
+        const response = await api.get('/user/progress');
+        return response.data.statistics || null;
+      },
+      staleTime: 2 * 60 * 1000,
+    });
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Clear all React Query cache to prevent stale data and API calls
+      queryClient.clear();
+
+      if (onLogout) {
+        await onLogout();
+      }
+
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force logout even if API call fails
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      queryClient.clear();
+      navigate('/auth');
     }
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user');
-    navigate('/login');
   };
 
   return (
@@ -139,7 +252,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               <BookOpen className="text-blue-700" size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold">ICT Platform</h2>
+              <h2 className="text-xl font-bold">WADHA?! Platform</h2>
               <p className="text-xs text-blue-200">Learning System</p>
             </div>
           </div>
@@ -153,10 +266,24 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout }) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
 
+              // Determine prefetch function based on path
+              const getPrefetchFn = (path: string) => {
+                if (path === '/dashboard') return prefetchDashboard;
+                if (path === '/chapters') return prefetchChapters;
+                if (path === '/quizzes') return prefetchQuizzes;
+                if (path === '/results') return prefetchResults;
+                if (path === '/progress') return prefetchProgress;
+                if (path === '/profile') return prefetchProfile;
+                return undefined;
+              };
+
+              const prefetchFn = getPrefetchFn(item.path);
+
               return (
                 <button
                   key={item.path}
                   onClick={() => handleNavigation(item.path)}
+                  onMouseEnter={prefetchFn} // Prefetch on hover
                   className={`
                     w-full flex items-center gap-3 px-4 py-3 rounded-lg
                     transition-all duration-200
