@@ -14,7 +14,8 @@ import {
   Calendar,
   Loader,
   FileText,
-  Trophy
+  Trophy,
+  Flag
 } from 'lucide-react';
 
 interface QuizResult {
@@ -26,6 +27,8 @@ interface QuizResult {
   percentage: number;
   passed: boolean;
   time_taken?: number;
+  flagged_count?: number;
+  flagged_wrong_count?: number;
   created_at: string;
   quiz: {
     id: number;
@@ -133,47 +136,47 @@ export default function Results() {
         {/* Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-xl shadow-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-md">
               <div className="flex items-center justify-between mb-2">
                 <FileText size={32} />
-                <span className="text-3xl font-bold">{stats.total}</span>
+                <span className="text-3xl font-black">{stats.total}</span>
               </div>
               <h3 className="text-sm font-medium opacity-90">Total Attempts</h3>
             </div>
 
-            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-xl shadow-lg">
+            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-2xl shadow-md">
               <div className="flex items-center justify-between mb-2">
                 <CheckCircle size={32} />
-                <span className="text-3xl font-bold">{stats.passed}</span>
+                <span className="text-3xl font-black">{stats.passed}</span>
               </div>
               <h3 className="text-sm font-medium opacity-90">Passed</h3>
             </div>
 
-            <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-xl shadow-lg">
+            <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-6 rounded-2xl shadow-md">
               <div className="flex items-center justify-between mb-2">
                 <XCircle size={32} />
-                <span className="text-3xl font-bold">{stats.failed}</span>
+                <span className="text-3xl font-black">{stats.failed}</span>
               </div>
               <h3 className="text-sm font-medium opacity-90">Failed</h3>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-xl shadow-lg">
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-md">
               <div className="flex items-center justify-between mb-2">
                 <TrendingUp size={32} />
-                <span className="text-3xl font-bold">{stats.averageScore}%</span>
+                <span className="text-3xl font-black">{stats.averageScore}%</span>
               </div>
               <h3 className="text-sm font-medium opacity-90">Average Score</h3>
             </div>
           </div>
 
           {/* Filter Tabs */}
-          <div className="bg-white rounded-lg shadow-sm p-2 mb-6 inline-flex gap-2">
+          <div className="bg-white rounded-xl shadow-sm p-1.5 mb-6 inline-flex gap-2 border border-gray-100">
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
                 filter === 'all'
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -181,9 +184,9 @@ export default function Results() {
             </button>
             <button
               onClick={() => setFilter('passed')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
                 filter === 'passed'
-                  ? 'bg-green-600 text-white'
+                  ? 'bg-green-600 text-white shadow-sm'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -191,9 +194,9 @@ export default function Results() {
             </button>
             <button
               onClick={() => setFilter('failed')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition-colors ${
                 filter === 'failed'
-                  ? 'bg-red-600 text-white'
+                  ? 'bg-red-600 text-white shadow-sm'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
@@ -203,115 +206,137 @@ export default function Results() {
 
           {/* Results List */}
           {filteredResults.length === 0 ? (
-            <div className="bg-white rounded-xl shadow p-12 text-center">
+            <div className="bg-white rounded-2xl shadow-sm p-12 text-center border border-gray-100">
               <Trophy size={64} className="text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">No Results Found</h3>
-              <p className="text-gray-500 mb-4">
+              <h3 className="text-xl font-bold text-gray-800 mb-2">No Results Found</h3>
+              <p className="text-gray-500 mb-6 text-sm">
                 {filter === 'all'
-                  ? 'You haven\'t taken any quizzes yet'
+                  ? "You haven't taken any quizzes yet"
                   : filter === 'passed'
                   ? 'No passed quizzes yet'
                   : 'No failed quizzes'}
               </p>
               <button
                 onClick={() => navigate('/quizzes')}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+                className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 shadow-md transition-all text-sm"
               >
                 Take a Quiz
               </button>
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredResults.map((result) => (
-                <div
-                  key={result.id}
-                  onClick={() => navigate(`/results/${result.id}`)}
-                  className={`bg-white rounded-lg shadow-sm border-2 p-6 hover:shadow-lg transition-all cursor-pointer ${
-                    result.passed ? 'border-green-200 hover:border-green-400' : 'border-red-200 hover:border-red-400'
-                  }`}
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        {result.passed ? (
-                          <CheckCircle className="text-green-600" size={24} />
-                        ) : (
-                          <XCircle className="text-red-600" size={24} />
+              {filteredResults.map((result) => {
+                const hasFlagged = !!result.flagged_count && result.flagged_count > 0;
+
+                return (
+                  <div
+                    key={result.id}
+                    onClick={() => navigate(`/results/${result.id}`)}
+                    className={`bg-white rounded-2xl shadow-sm border-2 p-6 hover:shadow-md transition-all cursor-pointer ${
+                      result.passed ? 'border-green-200 hover:border-green-400' : 'border-red-200 hover:border-red-400'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-4">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2.5 mb-2">
+                          {result.passed ? (
+                            <CheckCircle className="text-green-600 flex-shrink-0" size={24} />
+                          ) : (
+                            <XCircle className="text-red-600 flex-shrink-0" size={24} />
+                          )}
+                          <h3 className="text-lg font-bold text-gray-900">
+                            {result.quiz.title}
+                          </h3>
+                          <span className={`px-3 py-0.5 rounded-full text-xs font-bold ${
+                            result.passed
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}>
+                            {result.passed ? 'PASSED' : 'FAILED'}
+                          </span>
+
+                          {/* Flagged summary badge on attempt card (View 1) */}
+                          {hasFlagged && (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300 flex items-center gap-1">
+                              <Flag size={12} className="fill-amber-500 text-amber-600" />
+                              <span>{result.flagged_count} Flagged</span>
+                              {result.flagged_wrong_count !== undefined && result.flagged_wrong_count > 0 && (
+                                <span className="text-red-600 font-extrabold">({result.flagged_wrong_count} Wrong)</span>
+                              )}
+                            </span>
+                          )}
+                        </div>
+
+                        {result.quiz.chapter && (
+                          <p className="text-sm text-gray-600 font-medium">
+                            Chapter {result.quiz.chapter.chapter_number}: {result.quiz.chapter.title}
+                          </p>
                         )}
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {result.quiz.title}
-                        </h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                          result.passed
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
-                        }`}>
-                          {result.passed ? 'PASSED' : 'FAILED'}
-                        </span>
                       </div>
-                      {result.quiz.chapter && (
-                        <p className="text-sm text-gray-600">
-                          Chapter {result.quiz.chapter.chapter_number}: {result.quiz.chapter.title}
-                        </p>
+
+                      <div className="text-left sm:text-right">
+                        <div className={`text-3xl font-black ${
+                          result.passed ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {Math.round(result.percentage)}%
+                        </div>
+                        <div className="text-xs text-gray-500 font-semibold mt-0.5">
+                          {result.score}/{result.total_questions} correct
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs sm:text-sm text-gray-600 pt-3 border-t border-gray-100">
+                      <div className="flex items-center gap-1.5 font-medium">
+                        <Award size={16} className="text-gray-400" />
+                        <span>Attempt #{result.attempt_number}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-medium">
+                        <Clock size={16} className="text-gray-400" />
+                        <span>{formatTime(result.time_taken)}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-medium">
+                        <Calendar size={16} className="text-gray-400" />
+                        <span>{formatDate(result.created_at)}</span>
+                      </div>
+                      {hasFlagged && (
+                        <div className="flex items-center gap-1.5 font-medium text-amber-800">
+                          <Flag size={14} className="fill-amber-500 text-amber-600" />
+                          <span>{result.flagged_count} Flagged Doubts</span>
+                        </div>
                       )}
                     </div>
 
-                    <div className="text-right">
-                      <div className={`text-3xl font-bold ${
-                        result.passed ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {Math.round(result.percentage)}%
+                    <div className="mt-4 pt-3 border-t border-gray-100 flex flex-wrap justify-between items-center gap-2">
+                      <div className="text-xs text-gray-500 font-medium">
+                        Passing score: {result.quiz.passing_score}%
                       </div>
-                      <div className="text-sm text-gray-600">
-                        {result.score}/{result.total_questions} correct
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Award size={16} />
-                      <span>Attempt #{result.attempt_number}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Clock size={16} />
-                      <span>{formatTime(result.time_taken)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Calendar size={16} />
-                      <span>{formatDate(result.created_at)}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                    <div className="text-sm text-gray-600">
-                      Passing score: {result.quiz.passing_score}%
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/results/${result.id}`);
-                        }}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-semibold"
-                      >
-                        View Details →
-                      </button>
-                      {!result.passed && (
+                      <div className="flex gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/quiz/${result.quiz_id}`);
+                            navigate(`/results/${result.id}`);
                           }}
-                          className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm font-semibold"
+                          className="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors text-xs font-bold shadow-sm"
                         >
-                          Retry Quiz
+                          View Details →
                         </button>
-                      )}
+                        {!result.passed && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/quiz/${result.quiz_id}`);
+                            }}
+                            className="bg-yellow-600 text-white px-4 py-2 rounded-xl hover:bg-yellow-700 transition-colors text-xs font-bold shadow-sm"
+                          >
+                            Retry Quiz
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
