@@ -60,7 +60,7 @@ export default function Dashboard() {
       const response = await api.get('/chapters');
       return response.data.chapters || [];
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 60 * 1000,
   });
 
   // Fetch progress with React Query
@@ -70,7 +70,7 @@ export default function Dashboard() {
       const response = await api.get('/user/progress');
       return response.data.statistics || null;
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 60 * 1000,
   });
 
   // Fetch pricing with React Query
@@ -80,7 +80,7 @@ export default function Dashboard() {
       const response = await PremiumService.getPricing();
       return response.data;
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 10 * 60 * 1000,
     placeholderData: {
       currency: 'EGP',
       currency_symbol: 'EGP',

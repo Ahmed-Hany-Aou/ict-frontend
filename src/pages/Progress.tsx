@@ -45,7 +45,7 @@ export default function ProgressPage() {
       const response = await api.get('/user/progress');
       return response.data.statistics || null;
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 60 * 1000,
   });
 
   // Fetch chapters with React Query (reuse from dashboard)
@@ -55,7 +55,7 @@ export default function ProgressPage() {
       const response = await api.get('/chapters');
       return response.data.chapters || [];
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 60 * 1000,
   });
 
   const loading = progressLoading || chaptersLoading;

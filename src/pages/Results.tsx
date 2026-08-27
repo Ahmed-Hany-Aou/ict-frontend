@@ -50,7 +50,7 @@ export default function Results() {
       const response = await api.get('/quiz/results');
       return response.data.results || [];
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 60 * 1000,
   });
 
   const filteredResults = results.filter(result => {

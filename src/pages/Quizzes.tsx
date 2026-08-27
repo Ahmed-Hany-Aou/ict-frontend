@@ -74,7 +74,7 @@ export default function Quizzes() {
       const response = await api.get('/quizzes');
       return response.data.quizzes || {};
     },
-    staleTime: 0, // Always refetch - no cache
+    staleTime: 60 * 1000,
   });
 
   // Fetch pricing with React Query
@@ -84,7 +84,7 @@ export default function Quizzes() {
       const response = await PremiumService.getPricing();
       return response.data;
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 10 * 60 * 1000,
     placeholderData: {
       currency: 'EGP',
       currency_symbol: 'EGP',

@@ -47,7 +47,7 @@ export default function Chapters() {
       const response = await api.get('/chapters');
       return response.data.chapters || [];
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 60 * 1000,
   });
 
   // Fetch pricing with React Query
@@ -57,7 +57,7 @@ export default function Chapters() {
       const response = await PremiumService.getPricing();
       return response.data;
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 10 * 60 * 1000,
     placeholderData: {
       currency: 'EGP',
       currency_symbol: 'EGP',

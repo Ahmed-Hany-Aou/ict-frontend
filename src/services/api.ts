@@ -1,43 +1,25 @@
 // src/services/api.ts
 import axios, { InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/api';
 
 const api = axios.create({
   baseURL: API_URL,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
   },
-  withCredentials: true, // Recommended for Sanctum
+  withCredentials: true,
 });
 
-// Add token and AGGRESSIVE cache-busting to requests
+// Add token to requests
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // AGGRESSIVE cache busting for GET requests
-    // Adds both timestamp AND random string to ensure uniqueness
-    if (config.method === 'get') {
-      config.params = {
-        ...config.params,
-        _t: new Date().getTime(), // Timestamp
-        _r: Math.random().toString(36).substring(7) // Random string
-      };
-    }
-
-    // Force no-cache headers on every request
-    config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
-    config.headers['Pragma'] = 'no-cache';
-    config.headers['Expires'] = '0';
-
     return config;
   },
   (error) => {
@@ -54,25 +36,21 @@ api.interceptors.response.use(
       const currentPath = window.location.pathname;
 
       // Don't redirect if it's a login/register/forgot-password attempt
-      // These endpoints are expected to return 401 for wrong credentials
       if (url.includes('/login') || url.includes('/register') || url.includes('/forgot-password')) {
         return Promise.reject(error);
       }
 
       // Don't redirect if we're already on auth page or during logout
-      // This prevents infinite loops and multiple redirects
       if (currentPath === '/auth' || url.includes('/logout')) {
         return Promise.reject(error);
       }
 
       // For other 401 errors (expired/invalid token during authenticated requests)
-      // Only logout once to prevent multiple redirects
       const hasToken = localStorage.getItem('auth_token');
       if (hasToken) {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
 
-        // Redirect to auth page only if we have a token (prevents double redirect)
         setTimeout(() => {
           window.location.href = '/auth';
         }, 100);
@@ -81,7 +59,6 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // For all other errors, just reject
     return Promise.reject(error);
   }
 );

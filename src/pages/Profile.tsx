@@ -49,7 +49,7 @@ export default function Profile() {
       const response = await api.get('/user');
       return response.data;
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 5 * 60 * 1000,
   });
 
   // Set edit name when user data is loaded
@@ -67,7 +67,7 @@ export default function Profile() {
       const response = await api.get('/user/progress');
       return response.data.statistics || null;
     },
-    staleTime: 0, // No cache - always fetch fresh data
+    staleTime: 60 * 1000,
   });
 
   const loading = userLoading || statsLoading;
