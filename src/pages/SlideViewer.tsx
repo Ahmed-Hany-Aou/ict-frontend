@@ -204,36 +204,29 @@ export default function SlideViewer() {
     };
   }, [currentSlideIndex, slides.length]);
 
-// ... inside src/pages/SlideViewer.tsx
-
   const handleCompleteChapter = async () => {
-    // ...
     try {
       setChapterCompleted(true);
 
-      // Use mutation for chapter completion (with automatic cache invalidation)
-      const response = await completeChapterMutation.mutateAsync({
-        slideId: currentSlide.id,
-        chapterId: chapterIdNumber
-      });
+      if (currentSlide?.id) {
+        completeSlideMutation.mutate(currentSlide.id);
+      }
 
-      console.log('Chapter completion response:', response.data);
+      // Mark chapter completed on backend
+      await completeChapterMutation.mutateAsync({
+        slideId: currentSlide?.id || 0,
+        chapterId: chapterIdNumber
+      }).catch(err => console.warn('Chapter completion sync warning:', err));
 
       const allCompleted = new Set(slides.map((_, idx) => idx));
       setCompletedSlides(allCompleted);
-
-      // ----------------------------------------------
-      // 👇 REMOVE THIS LINE
-      // ----------------------------------------------
-      // alert('🎉 Congratulations! You have completed Chapter 1!');
-
-      // Now this timer will start immediately
+    } catch (err: any) {
+      console.error('Error completing chapter:', err);
+    } finally {
+      // Guaranteed redirect to dashboard after user sees completion badge
       setTimeout(() => {
         window.location.href = '/dashboard';
-      }, 2000);
-
-    } catch (err: any) {
-      // ... (error handling)
+      }, 1500);
     }
   };
 
