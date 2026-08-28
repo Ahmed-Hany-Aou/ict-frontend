@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S2 Computer Science: Decision Making & Flowcharts (If Conditions) | ElKheta Demo v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Cairo:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: #0f172a;
+      --bg-card-glass: rgba(15, 23, 42, 0.88);
+      --border-color: rgba(51, 65, 85, 0.65);
+      --accent-blue: #3b82f6;
+      --accent-indigo: #6366f1;
+      --accent-cyan: #06b6d4;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #030712;
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Print & PDF Settings */
+    @page {
+      size: 16in 9in;
+      margin: 0;
+    }
+
+    @media print {
+      body {
+        background: #090d16 !important;
+      }
+      .slide {
+        page-break-after: always !important;
+        break-after: page !important;
+        height: 100vh !important;
+        width: 100vw !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        border-radius: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+
+    /* Deck Layout */
+    .deck-container {
+      width: 100vw;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 30px;
+    }
+
+    .slide {
+      width: 1440px;
+      height: 810px;
+      aspect-ratio: 16 / 9;
+      background: radial-gradient(1200px circle at 85% 15%, rgba(99, 102, 241, 0.14), transparent 45%),
+                  radial-gradient(900px circle at 15% 85%, rgba(16, 185, 129, 0.10), transparent 45%),
+                  radial-gradient(600px circle at 50% 50%, rgba(6, 182, 212, 0.05), transparent 50%),
+                  #090d16;
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 44px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
+    }
+
+    /* Background grid */
+    .slide::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Header */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .topic-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #60a5fa;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .slide-number {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* Content Area */
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      margin: 12px 0;
+    }
+
+    .slide-title {
+      font-size: 34px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .slide-subtitle {
+      font-size: 18px;
+      font-weight: 600;
+      color: #93c5fd;
+      margin-bottom: 16px;
+    }
+
+    .definition-box {
+      background: var(--bg-card-glass);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: 0 14px 14px 0;
+      padding: 14px 20px;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #cbd5e1;
+      margin-bottom: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      border-right: 1px solid rgba(255, 255, 255, 0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .keypoint-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(6, 182, 212, 0.15));
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #e0e7ff;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Cards Grid */
+    .cards-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .info-card {
+      background: var(--bg-card-glass);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+      border-color: var(--accent-blue);
+      transform: translateY(-2px);
+    }
+
+    .info-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 800;
+      color: #93c5fd;
+      margin-bottom: 8px;
+    }
+
+    .info-card-desc {
+      font-size: 14px;
+      line-height: 1.45;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+    }
+
+    .info-card-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    /* 2 Column Split Layout: Flowchart + Code Window */
+    .split-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    /* SVG Flowchart Container */
+    .flowchart-container {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .flowchart-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #94a3b8;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Dark IDE Code Editor */
+    .ide-window {
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .ide-header {
+      background: #161b22;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ide-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .ide-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+
+    .ide-filename {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #8b949e;
+      font-weight: 600;
+    }
+
+    .ide-lang {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #58a6ff;
+      background: rgba(56, 139, 253, 0.15);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .ide-code {
+      padding: 16px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #e6edf3;
+      background: #0d1117;
+      overflow-x: auto;
+    }
+
+    .ide-terminal {
+      background: #080a0f;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px 18px;
+    }
+
+    .terminal-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #8b949e;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .terminal-output {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #7ee787;
+      line-height: 1.45;
+    }
+
+    /* Syntax Highlighting */
+    .kw { color: #ff7b72; font-weight: 700; } /* if, elif, else, and, or, not */
+    .op { color: #79c0ff; font-weight: 700; } /* ==, >=, <=, != */
+    .num { color: #79c0ff; }
+    .str { color: #a5d6ff; }
+    .fn { color: #d2a8ff; font-weight: 600; }
+    .cmt { color: #8b949e; font-style: italic; }
+    .var { color: #ffa657; }
+
+    /* Comparison & Logical Tables */
+    .table-container {
+      background: var(--bg-card-glass);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 12px 18px;
+      font-size: 14px;
+      color: #e2e8f0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mono-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    /* Footer */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* Floating Navigation Controls */
+    .nav-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 100px;
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 100;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
+
+    .nav-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      padding: 0 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="deck-container">
+
+  <!-- ==================== SLIDE 1: TITLE ==================== -->
+  <section class="slide" id="slide-1">
+    <div class="slide-header">
+      <span class="topic-badge">📘 S2 Computer Science • تانية ثانوي</span>
+      <span class="slide-number">01 / 11</span>
+    </div>
+
+    <div class="slide-body" style="text-align: center; align-items: center;">
+      <div style="width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);">
+        ⚡
+      </div>
+      <h1 class="slide-title" style="font-size: 46px; margin-bottom: 12px; background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Decision Making & Conditional Statements
+      </h1>
+      <p class="slide-subtitle" style="font-size: 22px; color: #cbd5e1; max-width: 850px; margin-bottom: 24px; font-weight: 500;">
+        Mastering Flowcharts, Boolean Logic (<code style="color: #60a5fa;">and</code>, <code style="color: #60a5fa;">or</code>, <code style="color: #60a5fa;">not</code>), and Multi-Branch Control in Python
+      </p>
+
+      <div style="display: flex; gap: 16px; justify-content: center;">
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 20px; font-size: 13px; font-weight: 700; color: #94a3b8;">
+          🎯 Egyptian National Curriculum
+        </div>
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 20px; font-size: 13px; font-weight: 700; color: #34d399;">
+          💻 Practical Code & Flowcharts
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Wadha Learning Platform • Secondary 2</span>
+      <span>Instructor Demo Deck v2</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 2: WHY DO WE NEED DECISIONS? ==================== -->
+  <section class="slide" id="slide-2">
+    <div class="slide-header">
+      <span class="topic-badge">💡 Core Intuition</span>
+      <span class="slide-number">02 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">Why Do We Need Decision Making in Software?</h2>
+      <div class="definition-box">
+        By default, computers execute code sequentially line-by-line. <strong>Conditional Statements</strong> allow software to evaluate live data and dynamically choose different execution branches.
+      </div>
+
+      <div class="keypoint-box">
+        <span>⚡</span>
+        <span>Golden Formula: <strong>Decision = (Input Data) ➔ [Condition Evaluation: True/False] ➔ (Action Execution)</strong></span>
+      </div>
+
+      <div class="cards-grid-3">
+        <div class="info-card">
+          <div>
+            <div class="info-card-header">
+              <span>🚇</span>
+              <span>Cairo Metro Turnstile</span>
+            </div>
+            <p class="info-card-desc">
+              Checks Smart Card balance. Opens the gate only if credit covers the trip fare.
+            </p>
+          </div>
+          <div class="info-card-code">if card_balance >= 10:<br>&nbsp;&nbsp;&nbsp;&nbsp;open_turnstile()</div>
+        </div>
+
+        <div class="info-card">
+          <div>
+            <div class="info-card-header">
+              <span>📱</span>
+              <span>Fawry / Vodafone Cash</span>
+            </div>
+            <p class="info-card-desc">
+              Validates electronic wallet balance before processing bill payments or transfers.
+            </p>
+          </div>
+          <div class="info-card-code">if wallet >= bill_amount:<br>&nbsp;&nbsp;&nbsp;&nbsp;transfer_funds()</div>
+        </div>
+
+        <div class="info-card">
+          <div>
+            <div class="info-card-header">
+              <span>🚗</span>
+              <span>Smart Toll Highway Gate</span>
+            </div>
+            <p class="info-card-desc">
+              Scans vehicle electronic RFID tag on Cairo-Alex Desert Road to lift gate barrier.
+            </p>
+          </div>
+          <div class="info-card-code">if rfid_tag_valid == True:<br>&nbsp;&nbsp;&nbsp;&nbsp;lift_barrier()</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Decision Logic Fundamentals</span>
+      <span>Page 2</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 3: BOOLEAN EXPRESSIONS & OPERATORS ==================== -->
+  <section class="slide" id="slide-3">
+    <div class="slide-header">
+      <span class="topic-badge">⚙️ The Decision Engine</span>
+      <span class="slide-number">03 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">Boolean Expressions & Comparison Operators</h2>
+      <div class="definition-box">
+        A <strong>Condition</strong> is an expression that Python evaluates to a Boolean value: strictly <code style="color: #34d399; font-weight: 700;">True</code> or <code style="color: #f87171; font-weight: 700;">False</code>.
+      </div>
+
+      <div class="table-container" style="margin-bottom: 14px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Operator</th>
+              <th>Meaning</th>
+              <th>Example Expression</th>
+              <th>Evaluation Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono-cell">==</td>
+              <td>Equal to</td>
+              <td><code>score == 100</code></td>
+              <td><span style="color: #34d399; font-weight: 700;">True</span> (if score is 100)</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">!=</td>
+              <td>Not Equal to</td>
+              <td><code>user_role != 'admin'</code></td>
+              <td><span style="color: #34d399; font-weight: 700;">True</span> (if user is guest)</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">&gt; and &gt;=</td>
+              <td>Greater than / Greater or Equal</td>
+              <td><code>student_marks &gt;= 50</code></td>
+              <td><span style="color: #34d399; font-weight: 700;">True</span> (Passing Egyptian threshold)</td>
+            </tr>
+            <tr>
+              <td class="mono-cell">&lt; and &lt;=</td>
+              <td>Less than / Less or Equal</td>
+              <td><code>wallet_balance &lt;= 0</code></td>
+              <td><span style="color: #f87171; font-weight: 700;">False</span> (if wallet has funds)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 12px; padding: 12px 18px; font-size: 14px; color: #fde68a; display: flex; align-items: center; gap: 10px;">
+        <span style="font-size: 20px;">⚠️</span>
+        <span><strong>CRITICAL TRAP:</strong> Single <code style="color: #f59e0b; font-weight: 800;">=</code> is for Variable Assignment (<code style="color: #fff;">x = 5</code>), while Double <code style="color: #f59e0b; font-weight: 800;">==</code> is for Equality Comparison (<code style="color: #fff;">x == 5</code>)!</span>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Relational Logic</span>
+      <span>Page 3</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 4: ONE-WAY (IF) WITH FLOWCHART ==================== -->
+  <section class="slide" id="slide-4">
+    <div class="slide-header">
+      <span class="topic-badge">🔀 1-Way Decision</span>
+      <span class="slide-number">04 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">The One-Way "if" Statement & Flowchart</h2>
+      <div class="definition-box" style="margin-bottom: 12px;">
+        Executes code <strong>ONLY</strong> when the condition evaluates to <code style="color: #34d399; font-weight: 700;">True</code>. If <code style="color: #f87171; font-weight: 700;">False</code>, the block is completely bypassed.
+      </div>
+
+      <div class="split-layout">
+        <!-- SVG Flowchart -->
+        <div class="flowchart-container">
+          <div class="flowchart-title">
+            <span>📊</span> Visual Execution Flowchart
+          </div>
+          <svg width="340" height="240" viewBox="0 0 340 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Start Oval -->
+            <rect x="110" y="10" width="120" height="34" rx="17" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+            <text x="170" y="32" fill="#f8fafc" font-size="12" font-weight="700" font-family="Plus Jakarta Sans" text-anchor="middle">Start Program</text>
+            <path d="M170 44 V70" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Diamond Decision -->
+            <polygon points="170,70 255,105 170,140 85,105" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+            <text x="170" y="102" fill="#fde68a" font-size="11" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">temp &gt; 37.5?</text>
+
+            <!-- True Branch (Right) -->
+            <path d="M255 105 H300 V160 H235" stroke="#10b981" stroke-width="2"/>
+            <text x="280" y="98" fill="#10b981" font-size="11" font-weight="800" font-family="Plus Jakarta Sans">True</text>
+
+            <!-- Action Box -->
+            <rect x="105" y="150" width="130" height="34" rx="8" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
+            <text x="170" y="172" fill="#ecfdf5" font-size="11" font-weight="700" font-family="Plus Jakarta Sans" text-anchor="middle">Print Warning Alert</text>
+
+            <!-- False Path (Straight Down) -->
+            <path d="M85 105 H40 V205 H110" stroke="#f43f5e" stroke-width="2"/>
+            <text x="50" y="98" fill="#f43f5e" font-size="11" font-weight="800" font-family="Plus Jakarta Sans">False</text>
+
+            <!-- End Box -->
+            <path d="M170 184 V205" stroke="#94a3b8" stroke-width="2"/>
+            <rect x="110" y="200" width="120" height="32" rx="16" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+            <text x="170" y="221" fill="#cbd5e1" font-size="12" font-weight="700" font-family="Plus Jakarta Sans" text-anchor="middle">Next Statements</text>
+          </svg>
+        </div>
+
+        <!-- IDE Window -->
+        <div class="ide-window">
+          <div class="ide-header">
+            <div class="ide-dots">
+              <div class="ide-dot dot-red"></div>
+              <div class="ide-dot dot-yellow"></div>
+              <div class="ide-dot dot-green"></div>
+            </div>
+            <span class="ide-filename">fever_detector.py</span>
+            <span class="ide-lang">Python 3</span>
+          </div>
+          <div class="ide-code">
+<span class="cmt"># Smart Clinic Patient Screening</span>
+<span class="var">temperature</span> <span class="op">=</span> <span class="num">38.8</span>
+
+<span class="kw">if</span> <span class="var">temperature</span> <span class="op">&gt;</span> <span class="num">37.5</span><span class="op">:</span>
+    <span class="fn">print</span>(<span class="str">"⚠️ Alert: High fever detected!"</span>)
+    <span class="fn">print</span>(<span class="str">"Please proceed to Triage Room 2."</span>)
+
+<span class="fn">print</span>(<span class="str">"Screening check complete."</span>)
+          </div>
+          <div class="ide-terminal">
+            <div class="terminal-label">💻 Terminal Output</div>
+            <div class="terminal-output">
+⚠️ Alert: High fever detected!<br>
+Please proceed to Triage Room 2.<br>
+Screening check complete.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Syntax Rule: Colon (:) & 4-Space Indentation Mandatory</span>
+      <span>Page 4</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 5: TWO-WAY (IF...ELSE) WITH FLOWCHART ==================== -->
+  <section class="slide" id="slide-5">
+    <div class="slide-header">
+      <span class="topic-badge">🔀 2-Way Decision</span>
+      <span class="slide-number">05 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">Two-Way Branching: The "if...else" Statement</h2>
+      <div class="definition-box" style="margin-bottom: 12px;">
+        Guarantees that <strong>exactly one</strong> of two mutually exclusive pathways will execute.
+      </div>
+
+      <div class="split-layout">
+        <!-- SVG Flowchart -->
+        <div class="flowchart-container">
+          <div class="flowchart-title">
+            <span>📊</span> Visual Execution Flowchart
+          </div>
+          <svg width="340" height="240" viewBox="0 0 340 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="110" y="10" width="120" height="32" rx="16" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+            <text x="170" y="31" fill="#f8fafc" font-size="12" font-weight="700" font-family="Plus Jakarta Sans" text-anchor="middle">Input: age</text>
+            <path d="M170 42 V65" stroke="#94a3b8" stroke-width="2"/>
+
+            <!-- Diamond -->
+            <polygon points="170,65 250,95 170,125 90,95" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+            <text x="170" y="99" fill="#fde68a" font-size="12" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">age &gt;= 18?</text>
+
+            <!-- True (Left: Green) -->
+            <path d="M90 95 H45 V135" stroke="#10b981" stroke-width="2"/>
+            <text x="55" y="88" fill="#10b981" font-size="11" font-weight="800">True</text>
+            <rect x="10" y="135" width="110" height="32" rx="8" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
+            <text x="65" y="155" fill="#ecfdf5" font-size="10" font-weight="700" text-anchor="middle">Issue License</text>
+
+            <!-- False (Right: Red) -->
+            <path d="M250 95 H295 V135" stroke="#f43f5e" stroke-width="2"/>
+            <text x="260" y="88" fill="#f43f5e" font-size="11" font-weight="800">False</text>
+            <rect x="220" y="135" width="110" height="32" rx="8" fill="#881337" stroke="#f43f5e" stroke-width="1.5"/>
+            <text x="275" y="155" fill="#ffe4e6" font-size="10" font-weight="700" text-anchor="middle">Reject: Underage</text>
+
+            <!-- Join -->
+            <path d="M65 167 V195 H110" stroke="#94a3b8" stroke-width="2"/>
+            <path d="M275 167 V195 H230" stroke="#94a3b8" stroke-width="2"/>
+
+            <rect x="110" y="182" width="120" height="32" rx="16" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+            <text x="170" y="202" fill="#cbd5e1" font-size="12" font-weight="700" text-anchor="middle">End Flow</text>
+          </svg>
+        </div>
+
+        <!-- IDE Window -->
+        <div class="ide-window">
+          <div class="ide-header">
+            <div class="ide-dots">
+              <div class="ide-dot dot-red"></div>
+              <div class="ide-dot dot-yellow"></div>
+              <div class="ide-dot dot-green"></div>
+            </div>
+            <span class="ide-filename">driving_license.py</span>
+            <span class="ide-lang">Python 3</span>
+          </div>
+          <div class="ide-code">
+<span class="cmt"># Egyptian Traffic Department License Eligibility</span>
+<span class="var">age</span> <span class="op">=</span> <span class="num">17</span>
+
+<span class="kw">if</span> <span class="var">age</span> <span class="op">&gt;=</span> <span class="num">18</span><span class="op">:</span>
+    <span class="fn">print</span>(<span class="str">"✅ Approved: Eligible for Driving License."</span>)
+<span class="kw">else</span><span class="op">:</span>
+    <span class="var">years_left</span> <span class="op">=</span> <span class="num">18</span> <span class="op">-</span> <span class="var">age</span>
+    <span class="fn">print</span>(<span class="str">"❌ Rejected: Underage applicant."</span>)
+    <span class="fn">print</span>(<span class="str">f"Please reapply in {years_left} year(s)."</span>)
+          </div>
+          <div class="ide-terminal">
+            <div class="terminal-label">💻 Terminal Output</div>
+            <div class="terminal-output">
+❌ Rejected: Underage applicant.<br>
+Please reapply in 1 year(s).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Fallback Principle: 'else' takes NO condition expression</span>
+      <span>Page 5</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 6: MULTI-WAY (IF...ELIF...ELSE) WITH FLOWCHART ==================== -->
+  <section class="slide" id="slide-6">
+    <div class="slide-header">
+      <span class="topic-badge">🔀 Multi-Way Ladder</span>
+      <span class="slide-number">06 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">Multi-Way Branching: The "if...elif...else" Chain</h2>
+      <div class="definition-box" style="margin-bottom: 12px;">
+        Evaluates conditions sequentially from top to bottom. The <strong>first</strong> condition that evaluates to <code style="color: #34d399; font-weight: 700;">True</code> runs, and all subsequent branches are skipped immediately!
+      </div>
+
+      <div class="split-layout">
+        <!-- SVG Flowchart -->
+        <div class="flowchart-container">
+          <div class="flowchart-title">
+            <span>📊</span> Thanaweya Amma Grading Flow
+          </div>
+          <svg width="340" height="240" viewBox="0 0 340 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="10" width="90" height="28" rx="14" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="65" y="28" fill="#f8fafc" font-size="11" font-weight="700" text-anchor="middle">Input Score</text>
+            <path d="M65 38 V55" stroke="#94a3b8" stroke-width="1.5"/>
+
+            <!-- Diamond 1 -->
+            <polygon points="65,55 125,75 65,95 5,75" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="65" y="78" fill="#fde68a" font-size="10" font-weight="700" text-anchor="middle">&gt;= 85?</text>
+            <path d="M125 75 H200" stroke="#10b981" stroke-width="1.5"/>
+            <rect x="200" y="60" width="130" height="28" rx="6" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
+            <text x="265" y="78" fill="#ecfdf5" font-size="11" font-weight="700" text-anchor="middle">Excellent (امتياز) 🌟</text>
+
+            <!-- Diamond 2 -->
+            <path d="M65 95 V115" stroke="#f43f5e" stroke-width="1.5"/>
+            <polygon points="65,115 125,135 65,155 5,135" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="65" y="138" fill="#fde68a" font-size="10" font-weight="700" text-anchor="middle">&gt;= 75?</text>
+            <path d="M125 135 H200" stroke="#10b981" stroke-width="1.5"/>
+            <rect x="200" y="120" width="130" height="28" rx="6" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="265" y="138" fill="#dbeafe" font-size="11" font-weight="700" text-anchor="middle">Very Good (جيد جداً)</text>
+
+            <!-- Fallback else -->
+            <path d="M65 155 V180 H200" stroke="#f43f5e" stroke-width="1.5"/>
+            <rect x="200" y="170" width="130" height="28" rx="6" fill="#881337" stroke="#f43f5e" stroke-width="1.5"/>
+            <text x="265" y="188" fill="#ffe4e6" font-size="11" font-weight="700" text-anchor="middle">Remaining / Fail</text>
+          </svg>
+        </div>
+
+        <!-- IDE Window -->
+        <div class="ide-window">
+          <div class="ide-header">
+            <div class="ide-dots">
+              <div class="ide-dot dot-red"></div>
+              <div class="ide-dot dot-yellow"></div>
+              <div class="ide-dot dot-green"></div>
+            </div>
+            <span class="ide-filename">thanaweya_grading.py</span>
+            <span class="ide-lang">Python 3</span>
+          </div>
+          <div class="ide-code">
+<span class="var">score</span> <span class="op">=</span> <span class="num">88.5</span>
+
+<span class="kw">if</span> <span class="var">score</span> <span class="op">&gt;=</span> <span class="num">85</span><span class="op">:</span>
+    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Excellent (امتياز) 🌟"</span>
+<span class="kw">elif</span> <span class="var">score</span> <span class="op">&gt;=</span> <span class="num">75</span><span class="op">:</span>
+    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Very Good (جيد جداً)"</span>
+<span class="kw">elif</span> <span class="var">score</span> <span class="op">&gt;=</span> <span class="num">65</span><span class="op">:</span>
+    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Good (جيد)"</span>
+<span class="kw">elif</span> <span class="var">score</span> <span class="op">&gt;=</span> <span class="num">50</span><span class="op">:</span>
+    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Pass (مقبول)"</span>
+<span class="kw">else</span><span class="op">:</span>
+    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Fail (راسب) - Summer Retake"</span>
+
+<span class="fn">print</span>(<span class="str">f"Evaluation: {grade}"</span>)
+          </div>
+          <div class="ide-terminal">
+            <div class="terminal-label">💻 Terminal Output</div>
+            <div class="terminal-output">
+Evaluation: Excellent (امتياز) 🌟
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Priority Rule: Order conditions from strictest/highest to lowest</span>
+      <span>Page 6</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 7: LOGICAL OPERATORS (AND, OR, NOT) ==================== -->
+  <section class="slide" id="slide-7">
+    <div class="slide-header">
+      <span class="topic-badge">🔗 Compound Logic</span>
+      <span class="slide-number">07 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">Logical Operators: Combining Compound Conditions</h2>
+      <div class="definition-box" style="margin-bottom: 12px;">
+        Use <strong>Logical Operators</strong> (<code style="color: #60a5fa; font-weight: 700;">and</code>, <code style="color: #60a5fa; font-weight: 700;">or</code>, <code style="color: #60a5fa; font-weight: 700;">not</code>) to evaluate multiple criteria in a single decision.
+      </div>
+
+      <div class="split-layout">
+        <!-- Table -->
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Operator</th>
+                <th>Logic Rule</th>
+                <th>Truth Condition</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono-cell" style="color: #34d399;">and</td>
+                <td>Conjunction</td>
+                <td>Returns <code style="color: #34d399;">True</code> ONLY if <strong>BOTH</strong> conditions are True.</td>
+              </tr>
+              <tr>
+                <td class="mono-cell" style="color: #60a5fa;">or</td>
+                <td>Disjunction</td>
+                <td>Returns <code style="color: #34d399;">True</code> if <strong>AT LEAST ONE</strong> condition is True.</td>
+              </tr>
+              <tr>
+                <td class="mono-cell" style="color: #f43f5e;">not</td>
+                <td>Negation</td>
+                <td>Inverts Boolean state (<code style="color: #34d399;">True</code> ➔ <code style="color: #f87171;">False</code>).</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="padding: 12px 16px; background: rgba(0, 0, 0, 0.4); border-top: 1px solid var(--border-color); font-size: 13px; color: #94a3b8;">
+            🔢 <strong>Precedence Order:</strong> <code style="color: #f43f5e; font-weight: 700;">not</code> evaluates first, then <code style="color: #34d399; font-weight: 700;">and</code>, then <code style="color: #60a5fa; font-weight: 700;">or</code>.
+          </div>
+        </div>
+
+        <!-- IDE Window -->
+        <div class="ide-window">
+          <div class="ide-header">
+            <div class="ide-dots">
+              <div class="ide-dot dot-red"></div>
+              <div class="ide-dot dot-yellow"></div>
+              <div class="ide-dot dot-green"></div>
+            </div>
+            <span class="ide-filename">scholarship_check.py</span>
+            <span class="ide-lang">Python 3</span>
+          </div>
+          <div class="ide-code">
+<span class="cmt"># Cairo STEM University Scholarship</span>
+<span class="var">gpa</span> <span class="op">=</span> <span class="num">3.8</span>
+<span class="var">activities</span> <span class="op">=</span> <span class="num">92</span>
+<span class="var">has_violations</span> <span class="op">=</span> <span class="kw">False</span>
+
+<span class="kw">if</span> (<span class="var">gpa</span> <span class="op">&gt;=</span> <span class="num">3.7</span> <span class="kw">and</span> <span class="var">activities</span> <span class="op">&gt;=</span> <span class="num">85</span>) <span class="kw">and</span> <span class="kw">not</span> <span class="var">has_violations</span><span class="op">:</span>
+    <span class="fn">print</span>(<span class="str">"🎉 100% Full Scholarship Awarded!"</span>)
+<span class="kw">else</span><span class="op">:</span>
+    <span class="fn">print</span>(<span class="str">"Standard Admission Track."</span>)
+          </div>
+          <div class="ide-terminal">
+            <div class="terminal-label">💻 Terminal Output</div>
+            <div class="terminal-output">
+🎉 100% Full Scholarship Awarded!
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Always use parentheses for clear compound expressions: (A and B) or C</span>
+      <span>Page 7</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 8: COMMON TRAPS & DEBUGGING ==================== -->
+  <section class="slide" id="slide-8">
+    <div class="slide-header">
+      <span class="topic-badge">🛠️ Pro Debugging</span>
+      <span class="slide-number">08 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">Common Traps, Debugging & Pro Tips</h2>
+      <div class="definition-box" style="margin-bottom: 16px;">
+        Mastering these 3 common student pitfalls guarantees zero syntax and logic errors in Python exams and projects:
+      </div>
+
+      <div class="cards-grid-3">
+        <div class="info-card" style="border-left: 4px solid #f43f5e;">
+          <div>
+            <div class="info-card-header" style="color: #f87171;">
+              <span>❌</span>
+              <span>Trap 1: Single '=' in if</span>
+            </div>
+            <p class="info-card-desc">
+              Assigning a variable instead of comparing equality throws <code style="color: #f43f5e;">SyntaxError</code>.
+            </p>
+          </div>
+          <div class="info-card-code" style="color: #f87171;">
+            ❌ if x = 10:<br>
+            <span style="color: #34d399;">✅ if x == 10:</span>
+          </div>
+        </div>
+
+        <div class="info-card" style="border-left: 4px solid #f59e0b;">
+          <div>
+            <div class="info-card-header" style="color: #fde68a;">
+              <span>❌</span>
+              <span>Trap 2: Inverted elif Order</span>
+            </div>
+            <p class="info-card-desc">
+              Placing loose condition before strict condition captures all cases early.
+            </p>
+          </div>
+          <div class="info-card-code" style="color: #fde68a;">
+            ❌ if score &gt;= 50 (First!)<br>
+            <span style="color: #34d399;">✅ if score &gt;= 85 (First!)</span>
+          </div>
+        </div>
+
+        <div class="info-card" style="border-left: 4px solid #60a5fa;">
+          <div>
+            <div class="info-card-header" style="color: #93c5fd;">
+              <span>❌</span>
+              <span>Trap 3: Missing Colon / Indent</span>
+            </div>
+            <p class="info-card-desc">
+              Forgetting <code style="color: #60a5fa;">:</code> or mixing tabs and spaces causes <code style="color: #60a5fa;">IndentationError</code>.
+            </p>
+          </div>
+          <div class="info-card-code" style="color: #93c5fd;">
+            ❌ if score &gt; 50<br>
+            <span style="color: #34d399;">✅ if score &gt; 50:</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 12px; padding: 12px 18px; font-size: 14px; color: #bfdbfe;">
+        💡 <strong>Pro-Tip for Secondary 2 Students:</strong> Always read the code line-by-line and trace variable values on scratch paper before predicting execution outputs!
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Code Quality & Diagnostic Skills</span>
+      <span>Page 8</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 9: INTERACTIVE LIVE QUIZ ==================== -->
+  <section class="slide" id="slide-9">
+    <div class="slide-header">
+      <span class="topic-badge">⚡ Interactive Check</span>
+      <span class="slide-number">09 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">Interactive Knowledge Check (Live Classroom Quiz)</h2>
+      <div class="definition-box" style="margin-bottom: 14px;">
+        Trace the compound condition logic below and predict what Python will print to the terminal:
+      </div>
+
+      <div class="split-layout">
+        <!-- Question Box -->
+        <div class="ide-window">
+          <div class="ide-header">
+            <div class="ide-dots">
+              <div class="ide-dot dot-red"></div>
+              <div class="ide-dot dot-yellow"></div>
+              <div class="ide-dot dot-green"></div>
+            </div>
+            <span class="ide-filename">quiz_challenge.py</span>
+            <span class="ide-lang">Challenge</span>
+          </div>
+          <div class="ide-code">
+<span class="var">x</span> <span class="op">=</span> <span class="num">10</span>
+<span class="var">y</span> <span class="op">=</span> <span class="num">5</span>
+
+<span class="kw">if</span> <span class="var">x</span> <span class="op">&gt;</span> <span class="num">8</span> <span class="kw">and</span> <span class="var">y</span> <span class="op">&gt;</span> <span class="num">6</span><span class="op">:</span>
+    <span class="fn">print</span>(<span class="str">"Option A"</span>)
+<span class="kw">elif</span> <span class="var">x</span> <span class="op">&gt;</span> <span class="num">8</span> <span class="kw">or</span> <span class="var">y</span> <span class="op">&gt;</span> <span class="num">6</span><span class="op">:</span>
+    <span class="fn">print</span>(<span class="str">"Option B"</span>)
+<span class="kw">else</span><span class="op">:</span>
+    <span class="fn">print</span>(<span class="str">"Option C"</span>)
+          </div>
+        </div>
+
+        <!-- Answers Grid -->
+        <div style="display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+          <div style="background: rgba(255, 255, 255, 0.04); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 18px; font-size: 15px; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 12px;">
+            <span style="width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 13px;">A</span>
+            <span>Prints "Option A" (False: y > 6 fails the 'and')</span>
+          </div>
+
+          <div style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; border-radius: 12px; padding: 12px 18px; font-size: 15px; font-weight: 800; color: #34d399; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="width: 28px; height: 28px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px;">B</span>
+              <span>Prints "Option B" (CORRECT ANSWER ✅)</span>
+            </div>
+            <span style="font-size: 12px; background: rgba(16, 185, 129, 0.3); padding: 4px 10px; border-radius: 6px;">x &gt; 8 is True</span>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.04); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 18px; font-size: 15px; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 12px;">
+            <span style="width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 13px;">C</span>
+            <span>Prints "Option C"</span>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.04); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 12px 18px; font-size: 15px; font-weight: 700; color: #94a3b8; display: flex; align-items: center; gap: 12px;">
+            <span style="width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 13px;">D</span>
+            <span>Throws SyntaxError</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Active Retrieval: Quick assessment validates conceptual retention</span>
+      <span>Page 9</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 10: APPLIED CASE STUDY (FAWRY) ==================== -->
+  <section class="slide" id="slide-10">
+    <div class="slide-header">
+      <span class="topic-badge">💼 Real-World Case Study</span>
+      <span class="slide-number">10 / 11</span>
+    </div>
+
+    <div class="slide-body">
+      <h2 class="slide-title">Case Study: Fawry E-Commerce Smart Checkout</h2>
+      <div class="definition-box" style="margin-bottom: 12px;">
+        <strong>Scenario:</strong> A customer in Cairo buys electronics worth <strong>650 EGP</strong>. Free Delivery is awarded if <code style="color: #60a5fa;">order &gt;= 500 EGP</code> <strong>AND</strong> promo code is <code style="color: #60a5fa;">'EGYPT2026'</code>. Otherwise, standard delivery is 50 EGP.
+      </div>
+
+      <div class="split-layout">
+        <!-- Breakdown Cards -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="info-card" style="padding: 12px 16px;">
+            <div class="info-card-header" style="font-size: 15px; margin-bottom: 4px;">
+              <span>1️⃣ Input Data</span>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #cbd5e1;">
+              cart_total = 650<br>
+              promo = "EGYPT2026"<br>
+              city = "Cairo"
+            </div>
+          </div>
+
+          <div class="info-card" style="padding: 12px 16px;">
+            <div class="info-card-header" style="font-size: 15px; margin-bottom: 4px; color: #fde68a;">
+              <span>2️⃣ Compound Condition</span>
+            </div>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #fde68a;">
+              cart_total &gt;= 500 (True)<br>
+              AND promo == "EGYPT2026" (True)<br>
+              ➔ Overall: TRUE
+            </div>
+          </div>
+
+          <div class="info-card" style="padding: 12px 16px; border-color: #10b981;">
+            <div class="info-card-header" style="font-size: 15px; margin-bottom: 4px; color: #34d399;">
+              <span>3️⃣ System Action & Output</span>
+            </div>
+            <div style="font-size: 13px; color: #ecfdf5;">
+              ✅ Free Delivery Applied (Saved 50 EGP).<br>
+              💳 Final Invoice: <strong>650 EGP</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Window -->
+        <div class="ide-window">
+          <div class="ide-header">
+            <div class="ide-dots">
+              <div class="ide-dot dot-red"></div>
+              <div class="ide-dot dot-yellow"></div>
+              <div class="ide-dot dot-green"></div>
+            </div>
+            <span class="ide-filename">fawry_checkout.py</span>
+            <span class="ide-lang">Python 3</span>
+          </div>
+          <div class="ide-code">
+<span class="var">cart_total</span> <span class="op">=</span> <span class="num">650</span>
+<span class="var">promo_code</span> <span class="op">=</span> <span class="str">"EGYPT2026"</span>
+<span class="var">delivery_fee</span> <span class="op">=</span> <span class="num">50</span>
+
+<span class="kw">if</span> <span class="var">cart_total</span> <span class="op">&gt;=</span> <span class="num">500</span> <span class="kw">and</span> <span class="var">promo_code</span> <span class="op">==</span> <span class="str">"EGYPT2026"</span><span class="op">:</span>
+    <span class="var">delivery_fee</span> <span class="op">=</span> <span class="num">0</span>
+    <span class="fn">print</span>(<span class="str">"🎉 Promo Applied: Free Delivery!"</span>)
+
+<span class="var">final_amount</span> <span class="op">=</span> <span class="var">cart_total</span> <span class="op">+</span> <span class="var">delivery_fee</span>
+<span class="fn">print</span>(<span class="str">f"Total Amount Due: {final_amount} EGP"</span>)
+          </div>
+          <div class="ide-terminal">
+            <div class="terminal-label">💻 Terminal Output</div>
+            <div class="terminal-output">
+🎉 Promo Applied: Free Delivery!<br>
+Total Amount Due: 650 EGP
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Practical Engineering: Transforming business rules into resilient software</span>
+      <span>Page 10</span>
+    </div>
+  </section>
+
+  <!-- ==================== SLIDE 11: MASTERY & ROADMAP ==================== -->
+  <section class="slide" id="slide-11">
+    <div class="slide-header">
+      <span class="topic-badge">🏆 Lesson Complete</span>
+      <span class="slide-number">11 / 11</span>
+    </div>
+
+    <div class="slide-body" style="text-align: center; align-items: center;">
+      <div style="font-size: 50px; margin-bottom: 12px;">🎉</div>
+      <h2 class="slide-title" style="font-size: 40px; margin-bottom: 12px;">
+        Mastery Unlocked: Conditional Logic & Control Flow!
+      </h2>
+      <p class="slide-subtitle" style="font-size: 19px; max-width: 850px; margin-bottom: 24px; color: #cbd5e1;">
+        You now possess the foundational engineering tools to build responsive decision algorithms and diagnostic systems in Python.
+      </p>
+
+      <div style="background: var(--bg-card-glass); border: 1px solid var(--border-color); border-radius: 18px; padding: 22px 30px; max-width: 800px; text-align: left; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);">
+        <h3 style="font-size: 16px; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px;">
+          🚀 Upcoming Curriculum Roadmap:
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 15px; color: #e2e8f0;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #34d399; font-weight: 800;">1.</span>
+            <span><strong>Nested Decision Trees:</strong> Embedding an <code style="color: #60a5fa;">if</code> condition inside another condition.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #34d399; font-weight: 800;">2.</span>
+            <span><strong>Pattern Matching:</strong> Utilizing <code style="color: #60a5fa;">match-case</code> statements in modern Python 3.10+.</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: #34d399; font-weight: 800;">3.</span>
+            <span><strong>Repetition & Loops:</strong> Automating execution cycles with <code style="color: #60a5fa;">while</code> and <code style="color: #60a5fa;">for</code> loops.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="slide-footer">
+      <span>Wadha Learning Platform • Secondary 2</span>
+      <span>Thank You! (Q&A Time)</span>
+    </div>
+  </section>
+
+</div>
+
+<!-- Navigation Controls for Live Browser Display -->
+<div class="nav-bar no-print">
+  <button class="nav-btn" onclick="prevSlide()">← Prev</button>
+  <span class="nav-counter" id="slideCounter">1 / 11</span>
+  <button class="nav-btn" onclick="nextSlide()">Next →</button>
+  <button class="nav-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+</div>
+
+<script>
+  let currentSlide = 1;
+  const totalSlides = 11;
+
+  function updateSlide(n) {
+    currentSlide = Math.max(1, Math.min(totalSlides, n));
+    const target = document.getElementById(`slide-${currentSlide}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+    document.getElementById('slideCounter').innerText = `${currentSlide} / ${totalSlides}`;
+  }
+
+  function nextSlide() {
+    updateSlide(currentSlide + 1);
+  }
+
+  function prevSlide() {
+    updateSlide(currentSlide - 1);
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'Space') {
+      nextSlide();
+    } else if (e.key === 'ArrowLeft') {
+      prevSlide();
+    } else if (e.key.toLowerCase() === 'f') {
+      toggleFullscreen();
+    }
+  });
+</script>
+
+</body>
+</html>
