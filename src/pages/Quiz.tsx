@@ -104,10 +104,10 @@ export default function Quiz() {
 
   const handleAnswerSelect = (questionIndex: number, optionIndex: number) => {
     if (!isSubmitted) {
-      setSelectedAnswers({
-        ...selectedAnswers,
+      setSelectedAnswers((prev) => ({
+        ...prev,
         [questionIndex]: optionIndex
-      });
+      }));
     }
   };
 
