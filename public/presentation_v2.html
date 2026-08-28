@@ -63,18 +63,19 @@
     }
 
     .deck-container {
-      width: 100vw;
+      width: 100%;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px 0;
-      gap: 30px;
+      padding: 20px 16px 80px 16px;
+      gap: 28px;
     }
 
     .slide {
-      width: 1440px;
-      height: 810px;
+      width: 100%;
+      max-width: 1400px;
+      min-height: calc(100vh - 60px);
       aspect-ratio: 16 / 9;
       background: radial-gradient(1200px circle at 85% 15%, rgba(99, 102, 241, 0.14), transparent 45%),
                   radial-gradient(900px circle at 15% 85%, rgba(16, 185, 129, 0.10), transparent 45%),
@@ -82,13 +83,44 @@
                   #090d16;
       border: 1px solid var(--border-color);
       border-radius: 24px;
-      padding: 38px 50px;
+      padding: 36px 46px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       position: relative;
       overflow: hidden;
       box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8);
+    }
+
+    @media screen and (max-width: 1180px) {
+      .slide {
+        aspect-ratio: auto;
+        min-height: auto;
+        padding: 24px 20px;
+        border-radius: 16px;
+      }
+      .slide-title {
+        font-size: 22px;
+      }
+      .split-layout {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .cards-grid-3 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .concept-grid-2 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .flowchart-container svg {
+        max-width: 100%;
+        height: auto;
+      }
+      .ide-code {
+        font-size: 12px;
+      }
     }
 
     .slide::before {
