@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>S2 Computer Science: Decision Making & Flowcharts (If Conditions) | ElKheta Demo v2</title>
+  <title>S2 Computer Science: Decision Making & Computational Logic | ElKheta Demo v2</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Cairo:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
     :root {
       --bg-dark: #090d16;
       --bg-card: #0f172a;
-      --bg-card-glass: rgba(15, 23, 42, 0.88);
+      --bg-card-glass: rgba(15, 23, 42, 0.90);
       --border-color: rgba(51, 65, 85, 0.65);
       --accent-blue: #3b82f6;
       --accent-indigo: #6366f1;
@@ -82,7 +82,7 @@
                   #090d16;
       border: 1px solid var(--border-color);
       border-radius: 24px;
-      padding: 40px 52px;
+      padding: 38px 50px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -113,11 +113,11 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 16px;
+      padding: 5px 14px;
       background: rgba(59, 130, 246, 0.14);
       border: 1px solid rgba(59, 130, 246, 0.35);
       border-radius: 100px;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 700;
       color: #60a5fa;
       letter-spacing: 0.04em;
@@ -126,11 +126,11 @@
 
     .slide-number {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: var(--text-muted);
       background: rgba(255, 255, 255, 0.04);
-      padding: 4px 12px;
+      padding: 3px 10px;
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.06);
     }
@@ -142,109 +142,120 @@
       justify-content: center;
       position: relative;
       z-index: 2;
-      margin: 10px 0;
+      margin: 8px 0;
     }
 
     .slide-title {
-      font-size: 32px;
+      font-size: 30px;
       font-weight: 800;
       line-height: 1.2;
       color: var(--text-primary);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       letter-spacing: -0.02em;
     }
 
-    .definition-box {
-      background: var(--bg-card-glass);
+    .concept-banner {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(99, 102, 241, 0.08));
       border-left: 4px solid var(--accent-blue);
-      border-radius: 0 14px 14px 0;
+      border-radius: 0 12px 12px 0;
       padding: 12px 18px;
       font-size: 15.5px;
       line-height: 1.5;
-      color: #cbd5e1;
-      margin-bottom: 14px;
+      color: #e2e8f0;
+      margin-bottom: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.04);
       border-right: 1px solid rgba(255, 255, 255, 0.04);
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
 
-    .keypoint-box {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(6, 182, 212, 0.15));
-      border: 1px solid rgba(99, 102, 241, 0.4);
+    .concept-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .concept-box {
+      background: var(--bg-card-glass);
+      border: 1px solid var(--border-color);
       border-radius: 14px;
-      padding: 12px 20px;
-      font-size: 15.5px;
-      font-weight: 700;
-      color: #e0e7ff;
-      margin-bottom: 14px;
+      padding: 14px 18px;
+    }
+
+    .concept-box-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #93c5fd;
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
+    }
+
+    .concept-box-desc {
+      font-size: 13.5px;
+      line-height: 1.45;
+      color: #cbd5e1;
     }
 
     .cards-grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
+      gap: 14px;
     }
 
     .info-card {
       background: var(--bg-card-glass);
       border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 16px 18px;
+      border-radius: 14px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-      transition: all 0.3s ease;
-    }
-
-    .info-card:hover {
-      border-color: var(--accent-blue);
-      transform: translateY(-2px);
     }
 
     .info-card-header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 16px;
+      gap: 8px;
+      font-size: 15px;
       font-weight: 800;
       color: #93c5fd;
       margin-bottom: 6px;
     }
 
     .info-card-desc {
-      font-size: 13.5px;
+      font-size: 13px;
       line-height: 1.45;
       color: #cbd5e1;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
-    .info-card-code {
+    .info-card-logic {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      background: rgba(0, 0, 0, 0.5);
+      font-size: 11.5px;
+      background: rgba(0, 0, 0, 0.45);
       border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px;
-      padding: 8px 10px;
+      border-radius: 6px;
+      padding: 6px 8px;
       color: #34d399;
       font-weight: 600;
     }
 
+    /* 2 Column Split Layout: Concept / Flowchart on Left, Code Demo on Right */
     .split-layout {
       display: grid;
-      grid-template-columns: 1fr 1.15fr;
-      gap: 20px;
+      grid-template-columns: 1.15fr 0.95fr;
+      gap: 18px;
       align-items: stretch;
     }
 
     .flowchart-container {
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 14px;
+      border-radius: 14px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -252,25 +263,25 @@
     }
 
     .flowchart-title {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: #94a3b8;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     .ide-window {
       background: #0d1117;
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
     }
 
     .ide-header {
@@ -284,12 +295,12 @@
 
     .ide-dots {
       display: flex;
-      gap: 6px;
+      gap: 5px;
     }
 
     .ide-dot {
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
     }
 
@@ -299,26 +310,25 @@
 
     .ide-filename {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
+      font-size: 11.5px;
       color: #8b949e;
       font-weight: 600;
     }
 
     .ide-lang {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       color: #58a6ff;
       background: rgba(56, 139, 253, 0.15);
-      padding: 2px 8px;
+      padding: 2px 7px;
       border-radius: 4px;
     }
 
-    /* Fixed white-space: pre for proper code formatting */
     .ide-code {
-      padding: 14px 18px;
+      padding: 12px 16px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 13.5px;
+      font-size: 13px;
       line-height: 1.55;
       color: #e6edf3;
       background: #0d1117;
@@ -329,24 +339,21 @@
     .ide-terminal {
       background: #080a0f;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 10px 16px;
+      padding: 9px 14px;
     }
 
     .terminal-label {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: #8b949e;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      margin-bottom: 3px;
     }
 
     .terminal-output {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12.5px;
+      font-size: 12px;
       color: #7ee787;
       line-height: 1.4;
       white-space: pre-wrap;
@@ -363,7 +370,7 @@
     .table-container {
       background: var(--bg-card-glass);
       border: 1px solid var(--border-color);
-      border-radius: 14px;
+      border-radius: 12px;
       overflow: hidden;
     }
 
@@ -375,8 +382,8 @@
 
     th {
       background: rgba(255, 255, 255, 0.05);
-      padding: 10px 14px;
-      font-size: 12px;
+      padding: 8px 12px;
+      font-size: 11.5px;
       font-weight: 800;
       color: #94a3b8;
       text-transform: uppercase;
@@ -385,8 +392,8 @@
     }
 
     td {
-      padding: 10px 14px;
-      font-size: 13px;
+      padding: 8px 12px;
+      font-size: 12.5px;
       color: #e2e8f0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
@@ -407,9 +414,9 @@
       align-items: center;
       position: relative;
       z-index: 2;
-      padding-top: 10px;
+      padding-top: 8px;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 12px;
+      font-size: 11.5px;
       color: var(--text-muted);
       font-weight: 600;
     }
@@ -464,212 +471,221 @@
 
 <div class="deck-container">
 
-  <!-- ==================== SLIDE 1: TITLE ==================== -->
+  <!-- ==================== SLIDE 1: TITLE & CORE CONCEPT ==================== -->
   <section class="slide" id="slide-1">
     <div class="slide-header">
-      <span class="topic-badge">📘 S2 Computer Science • تانية ثانوي</span>
+      <span class="topic-badge">📘 S2 Computer Science • التفكير المنطقي والبرمجة</span>
       <span class="slide-number">01 / 11</span>
     </div>
 
     <div class="slide-body" style="text-align: center; align-items: center;">
-      <div style="width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);">
+      <div style="width: 74px; height: 74px; border-radius: 20px; background: linear-gradient(135deg, #3b82f6, #6366f1); display: flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 16px; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);">
         ⚡
       </div>
-      <h1 class="slide-title" style="font-size: 44px; margin-bottom: 12px; background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-        Decision Making & Conditional Logic
+      <h1 class="slide-title" style="font-size: 42px; margin-bottom: 10px; background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Computational Thinking: Decision Making & Control Flow
       </h1>
-      <p style="font-size: 21px; color: #cbd5e1; max-width: 850px; margin-bottom: 24px; font-weight: 500;">
-        How to teach your computer to think and make smart choices in Python
+      <p style="font-size: 20px; color: #cbd5e1; max-width: 850px; margin-bottom: 22px; font-weight: 500;">
+        اتخاذ القرار والتحكم الشرطي: كيف يفكر الكمبيوتر ويختار المسارات الذكية؟
       </p>
 
-      <div style="display: flex; gap: 16px; justify-content: center;">
-        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 20px; font-size: 13px; font-weight: 700; color: #94a3b8;">
-          🎯 Egyptian National Curriculum (Secondary 2)
+      <div style="display: flex; gap: 14px; justify-content: center;">
+        <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 18px; font-size: 12.5px; font-weight: 700; color: #94a3b8;">
+          🎯 منهج وزارة التربية والتعليم (الصف الثاني الثانوي)
         </div>
-        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 20px; font-size: 13px; font-weight: 700; color: #34d399;">
-          💻 Flowcharts, Boolean Logic & Python Code
+        <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 18px; font-size: 12.5px; font-weight: 700; color: #34d399;">
+          🧠 التركيز على المفاهيم والخرائط التدفقية (Logic First)
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
       <span>Wadha Learning Platform • Secondary 2</span>
-      <span>Instructor Demo Deck v2</span>
+      <span>Instructor Pedagogical Deck v2</span>
     </div>
   </section>
 
-  <!-- ==================== SLIDE 2: WHY DO WE NEED DECISIONS? ==================== -->
+  <!-- ==================== SLIDE 2: HUMAN VS COMPUTER DECISIONS ==================== -->
   <section class="slide" id="slide-2">
     <div class="slide-header">
-      <span class="topic-badge">💡 Everyday Intuition</span>
+      <span class="topic-badge">💡 المفهوم الأساسي (Core Intuition)</span>
       <span class="slide-number">02 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">Why Do We Need Decisions in Code?</h2>
-      <div class="definition-box">
-        In real life: <em>"<strong>IF</strong> it rains, I take an umbrella. <strong>ELSE</strong>, I walk freely."</em><br>
-        In software, <strong>Conditional Statements</strong> give programs the exact same superpower: checking data before taking action!
+      <h2 class="slide-title">كيف يتخذ الإنسان والكمبيوتر القرارات؟</h2>
+      <div class="concept-banner">
+        <strong>التدفق التتابعي (Sequential Flow):</strong> الكمبيوتر ينفذ الأوامر سطراً بعد سطر دون تفكير.<br>
+        <strong>التدفق الشرطي (Conditional Flow):</strong> يمنح البرنامج "عقلاً" لتقييم البيانات واختيار المسار المناسب.
       </div>
 
-      <div class="keypoint-box">
-        <span>⚡</span>
-        <span>The Simple Formula: <strong>Input Data ➔ Ask a Yes/No Question (True/False) ➔ Run Matching Action</strong></span>
+      <div class="concept-grid-2">
+        <div class="concept-box">
+          <div class="concept-box-title">
+            <span>🧠</span> تفكير الإنسان (Human Mind)
+          </div>
+          <p class="concept-box-desc">
+            تستقبل حواسك مدخلات ➔ عقلك يحلل الموقف ➔ تتخذ قراراً:<br>
+            <em>"إذا كانت إشارة المرور حمراء، أضغط على الفرامل؛ وإلا أكمل طريقي."</em>
+          </p>
+        </div>
+
+        <div class="concept-box">
+          <div class="concept-box-title">
+            <span>💻</span> تفكير الكمبيوتر (Computer Logic)
+          </div>
+          <p class="concept-box-desc">
+            البرنامج يستقبل بيانات (Variables) ➔ يختبر الشرط (True / False) ➔ ينفذ الأوامر التابعة له:<br>
+            <code>if light == 'RED': stop_car() else: drive()</code>
+          </p>
+        </div>
       </div>
 
       <div class="cards-grid-3">
         <div class="info-card">
-          <div>
-            <div class="info-card-header">
-              <span>🚇</span>
-              <span>Cairo Metro Gate</span>
-            </div>
-            <p class="info-card-desc">
-              Checks your Smart Card balance. If you have enough credit, it opens the turnstile!
-            </p>
+          <div class="info-card-header">
+            <span>🚇</span>
+            <span>بوابة المترو الذكية</span>
           </div>
-          <div class="info-card-code">if balance >= 10:<br>&nbsp;&nbsp;&nbsp;&nbsp;open_gate()</div>
+          <p class="info-card-desc">فحص الرصيد: لو الرصيد كافي يفتح البوابة، لو غير كافي يرفض.</p>
+          <div class="info-card-logic">if balance >= 10: open_gate()</div>
         </div>
 
         <div class="info-card">
-          <div>
-            <div class="info-card-header">
-              <span>📱</span>
-              <span>Fawry / Mobile Cash</span>
-            </div>
-            <p class="info-card-desc">
-              Checks your wallet before approving a bill payment or mobile balance recharge.
-            </p>
+          <div class="info-card-header">
+            <span>📱</span>
+            <span>فوري ومحافظ الكاش</span>
           </div>
-          <div class="info-card-code">if wallet >= bill:<br>&nbsp;&nbsp;&nbsp;&nbsp;pay_bill()</div>
+          <p class="info-card-desc">التحقق من الرصيد قبل تنفيذ عملية السحب أو دفع الفاتورة.</p>
+          <div class="info-card-logic">if wallet >= bill: pay_bill()</div>
         </div>
 
         <div class="info-card">
-          <div>
-            <div class="info-card-header">
-              <span>🎮</span>
-              <span>Video Game Logic</span>
-            </div>
-            <p class="info-card-desc">
-              When the player's health drops to 0, the game triggers the Game Over screen.
-            </p>
+          <div class="info-card-header">
+            <span>🚗</span>
+            <span>رادار السرعة الذكي</span>
           </div>
-          <div class="info-card-code">if health <= 0:<br>&nbsp;&nbsp;&nbsp;&nbsp;game_over()</div>
+          <p class="info-card-desc">فحص سرعة السيارة: إذا تجاوزت 120 كم/س يتم تسجيل مخالفة فورية.</p>
+          <div class="info-card-logic">if speed > 120: log_fine()</div>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>Decision Logic Fundamentals</span>
+      <span>القاعدة الذهبية: المدخلات ➔ تقييم الشرط (صح / خطأ) ➔ اتخاذ الإجراء المناسب</span>
       <span>Page 2</span>
     </div>
   </section>
 
-  <!-- ==================== SLIDE 3: COMPARISON OPERATORS ==================== -->
+  <!-- ==================== SLIDE 3: BOOLEAN & COMPARISON ==================== -->
   <section class="slide" id="slide-3">
     <div class="slide-header">
-      <span class="topic-badge">⚙️ The 6 Comparison Questions</span>
+      <span class="topic-badge">⚙️ محرك المقارنة (Decision Engine)</span>
       <span class="slide-number">03 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">Comparison Operators (Asking Questions in Code)</h2>
-      <div class="definition-box">
-        A <strong>Condition</strong> is simply a question Python answers with strictly <code style="color: #34d399; font-weight: 700;">True</code> (Yes) or <code style="color: #f87171; font-weight: 700;">False</code> (No).
+      <h2 class="slide-title">تشريح الشرط: كيف يسأل الكمبيوتر؟ (Comparison Operators)</h2>
+      <div class="concept-banner">
+        الشرط البرمجي هو مجرد <strong>سؤال نعم/لا</strong> إجابته حصرياً إما <code style="color: #34d399; font-weight: 700;">True</code> أو <code style="color: #f87171; font-weight: 700;">False</code> (Boolean).
       </div>
 
-      <div class="table-container" style="margin-bottom: 12px;">
+      <div class="table-container" style="margin-bottom: 10px;">
         <table>
           <thead>
             <tr>
-              <th>Operator</th>
-              <th>Question it Asks</th>
-              <th>Example Expression</th>
-              <th>Evaluation Result</th>
+              <th>المعامل (Operator)</th>
+              <th>السؤال المنطقي الذي يسأله</th>
+              <th>مثال تطبيقي</th>
+              <th>النتيجة المنطقية</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td class="mono-cell">==</td>
-              <td>Is it equal to?</td>
+              <td>هل الطرفان متساويان تماماً؟</td>
               <td><code>score == 100</code></td>
-              <td><span style="color: #34d399; font-weight: 700;">True</span> (if score is 100)</td>
+              <td><span style="color: #34d399; font-weight: 700;">True</span> (لو الدرجة 100)</td>
             </tr>
             <tr>
               <td class="mono-cell">!=</td>
-              <td>Is it NOT equal to?</td>
+              <td>هل الطرفان مختلفان (لا يساوي)؟</td>
               <td><code>user != 'admin'</code></td>
-              <td><span style="color: #34d399; font-weight: 700;">True</span> (if guest user)</td>
+              <td><span style="color: #34d399; font-weight: 700;">True</span> (لو مستخدم عادي)</td>
             </tr>
             <tr>
-              <td class="mono-cell">&gt; and &gt;=</td>
-              <td>Is it greater (or equal)?</td>
+              <td class="mono-cell">&gt; و &gt;=</td>
+              <td>هل أكبر من (أو يساوي)؟</td>
               <td><code>marks &gt;= 50</code></td>
-              <td><span style="color: #34d399; font-weight: 700;">True</span> (Pass Egyptian threshold)</td>
+              <td><span style="color: #34d399; font-weight: 700;">True</span> (حد النجاح في مصر)</td>
             </tr>
             <tr>
-              <td class="mono-cell">&lt; and &lt;=</td>
-              <td>Is it less (or equal)?</td>
-              <td><code>wallet &lt;= 0</code></td>
-              <td><span style="color: #f87171; font-weight: 700;">False</span> (if wallet has money)</td>
+              <td class="mono-cell">&lt; و &lt;=</td>
+              <td>هل أصغر من (أو يساوي)؟</td>
+              <td><code>balance &lt;= 0</code></td>
+              <td><span style="color: #f87171; font-weight: 700;">False</span> (لو الحساب به رصيد)</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 12px; padding: 10px 16px; font-size: 14px; color: #fde68a; display: flex; align-items: center; gap: 10px;">
+      <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 10px; padding: 9px 15px; font-size: 13.5px; color: #fde68a; display: flex; align-items: center; gap: 10px;">
         <span style="font-size: 18px;">💡</span>
-        <span><strong>Remember:</strong> Single <code style="color: #f59e0b; font-weight: 800;">=</code> is for <em>giving a value</em> (<code style="color: #fff;">x = 5</code>), while Double <code style="color: #f59e0b; font-weight: 800;">==</code> is for <em>asking a question</em> (<code style="color: #fff;">x == 5</code>)!</span>
+        <span><strong>فارق مفاهيمي جوهري:</strong> علامة <code style="color: #f59e0b; font-weight: 800;">=</code> الواحدة وظيفتها <em>تخزين قيمة</em> في متغير، بينما علامة <code style="color: #f59e0b; font-weight: 800;">==</code> المزدوجة وظيفتها <em>طرح سؤال مقارنة</em>!</span>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>Relational Logic</span>
+      <span>تفكير منطقي: الشرط لا يقبل إلا احتمالين لا ثالث لهما: True أو False</span>
       <span>Page 3</span>
     </div>
   </section>
 
-  <!-- ==================== SLIDE 4: ONE-WAY (IF) WITH FLOWCHART ==================== -->
+  <!-- ==================== SLIDE 4: ONE-WAY (IF) ==================== -->
   <section class="slide" id="slide-4">
     <div class="slide-header">
-      <span class="topic-badge">🔀 1-Way Decision</span>
+      <span class="topic-badge">🔀 التفرع الأحادي (1-Way Selection)</span>
       <span class="slide-number">04 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">1-Way Decision: The "if" Statement</h2>
-      <div class="definition-box" style="margin-bottom: 12px;">
-        Runs the code block <strong>ONLY IF</strong> the condition is <code style="color: #34d399; font-weight: 700;">True</code>. If <code style="color: #f87171; font-weight: 700;">False</code>, it simply skips it.
+      <h2 class="slide-title">التفرع الأحادي: جملة الشرط البسيطة (if Statement)</h2>
+      <div class="concept-banner" style="margin-bottom: 10px;">
+        <strong>المفهوم:</strong> تنفيذ أمر معين <strong>فقط وحصرياً</strong> إذا تحقق الشرط (<code style="color: #34d399;">True</code>). إذا لم يتحقق الشرط (<code style="color: #f87171;">False</code>)، يتجاهله البرنامج تماماً ويكمل مساره الطبيعي.
       </div>
 
       <div class="split-layout">
+        <!-- Flowchart -->
         <div class="flowchart-container">
           <div class="flowchart-title">
-            <span>📊</span> Visual Flowchart
+            <span>📊</span> خريطة التدفق المعيارية (Flowchart)
           </div>
-          <svg width="340" height="230" viewBox="0 0 340 230" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="110" y="10" width="120" height="30" rx="15" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
-            <text x="170" y="30" fill="#f8fafc" font-size="12" font-weight="700" text-anchor="middle">Start</text>
-            <path d="M170 40 V65" stroke="#94a3b8" stroke-width="2"/>
+          <svg width="340" height="210" viewBox="0 0 340 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="110" y="8" width="120" height="28" rx="14" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+            <text x="170" y="27" fill="#f8fafc" font-size="11" font-weight="700" text-anchor="middle">بداية (Start)</text>
+            <path d="M170 36 V58" stroke="#94a3b8" stroke-width="2"/>
 
-            <polygon points="170,65 255,98 170,130 85,98" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
-            <text x="170" y="95" fill="#fde68a" font-size="11" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">temp &gt; 37.5?</text>
+            <!-- Diamond -->
+            <polygon points="170,58 250,88 170,118 90,88" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+            <text x="170" y="86" fill="#fde68a" font-size="11" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">temp &gt; 37.5؟</text>
 
-            <path d="M255 98 H295 V150 H235" stroke="#10b981" stroke-width="2"/>
-            <text x="275" y="90" fill="#10b981" font-size="11" font-weight="800">YES</text>
+            <!-- True -->
+            <path d="M250 88 H290 V138 H235" stroke="#10b981" stroke-width="2"/>
+            <text x="270" y="80" fill="#10b981" font-size="11" font-weight="800">نعم (True)</text>
+            <rect x="105" y="128" width="130" height="30" rx="6" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
+            <text x="170" y="147" fill="#ecfdf5" font-size="10.5" font-weight="700" text-anchor="middle">طباعة إنذار حرارة</text>
 
-            <rect x="105" y="140" width="130" height="32" rx="8" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
-            <text x="170" y="160" fill="#ecfdf5" font-size="11" font-weight="700" text-anchor="middle">Print Fever Warning</text>
+            <!-- False -->
+            <path d="M90 88 H50 V180 H110" stroke="#f43f5e" stroke-width="2"/>
+            <text x="60" y="80" fill="#f43f5e" font-size="11" font-weight="800">لا (False)</text>
 
-            <path d="M85 98 H45 V195 H110" stroke="#f43f5e" stroke-width="2"/>
-            <text x="55" y="90" fill="#f43f5e" font-size="11" font-weight="800">NO</text>
-
-            <path d="M170 172 V195" stroke="#94a3b8" stroke-width="2"/>
-            <rect x="110" y="190" width="120" height="30" rx="15" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
-            <text x="170" y="210" fill="#cbd5e1" font-size="12" font-weight="700" text-anchor="middle">Continue Code</text>
+            <path d="M170 158 V180" stroke="#94a3b8" stroke-width="2"/>
+            <rect x="110" y="174" width="120" height="28" rx="14" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+            <text x="170" y="193" fill="#cbd5e1" font-size="11" font-weight="700" text-anchor="middle">إكمال البرنامج</text>
           </svg>
         </div>
 
+        <!-- Minimal Code -->
         <div class="ide-window">
           <div class="ide-header">
             <div class="ide-dots">
@@ -678,76 +694,76 @@
               <div class="ide-dot dot-green"></div>
             </div>
             <span class="ide-filename">fever_check.py</span>
-            <span class="ide-lang">Python 3</span>
+            <span class="ide-lang">تطبيق بايثون</span>
           </div>
-          <div class="ide-code"><span class="cmt"># Temperature screening</span>
-<span class="var">temperature</span> <span class="op">=</span> <span class="num">38.8</span>
+          <div class="ide-code"><span class="cmt"># فحص درجة حرارة المريض</span>
+<span class="var">temp</span> <span class="op">=</span> <span class="num">38.8</span>
 
-<span class="kw">if</span> <span class="var">temperature</span> <span class="op">&gt;</span> <span class="num">37.5</span><span class="op">:</span>
-    <span class="fn">print</span>(<span class="str">"⚠️ Warning: High temperature!"</span>)
-    <span class="fn">print</span>(<span class="str">"Please consult a doctor."</span>)
+<span class="kw">if</span> <span class="var">temp</span> <span class="op">&gt;</span> <span class="num">37.5</span><span class="op">:</span>
+    <span class="fn">print</span>(<span class="str">"⚠️ تنبيه: حرارة مرتفعة!"</span>)
 
-<span class="fn">print</span>(<span class="str">"Check completed."</span>)</div>
+<span class="fn">print</span>(<span class="str">"اكتمل الفحص."</span>)</div>
           <div class="ide-terminal">
-            <div class="terminal-label">💻 Terminal Output</div>
-            <div class="terminal-output">⚠️ Warning: High temperature!
-Please consult a doctor.
-Check completed.</div>
+            <div class="terminal-label">💻 مخرجات الشاشة (Terminal)</div>
+            <div class="terminal-output">⚠️ تنبيه: حرارة مرتفعة!
+اكتمل الفحص.</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>2 Key Rules: 1. Colon (:) at end of if line | 2. Indent 4 spaces inside the block</span>
+      <span>قاعدتان نحويتان: 1. النقطتان (:) في نهاية سطر الشرط | 2. المسافة البادئة (Indentation) لتمييز الأوامر التابعة للشرط</span>
       <span>Page 4</span>
     </div>
   </section>
 
-  <!-- ==================== SLIDE 5: TWO-WAY (IF...ELSE) WITH FLOWCHART ==================== -->
+  <!-- ==================== SLIDE 5: TWO-WAY (IF...ELSE) ==================== -->
   <section class="slide" id="slide-5">
     <div class="slide-header">
-      <span class="topic-badge">🔀 2-Way Decision</span>
+      <span class="topic-badge">🔀 التفرع الثنائي (2-Way Selection)</span>
       <span class="slide-number">05 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">2-Way Decision: The "if...else" Statement</h2>
-      <div class="definition-box" style="margin-bottom: 12px;">
-        Gives you a choice between two paths: <strong>Path A (if condition is True)</strong> OR <strong>Path B (if condition is False)</strong>. Exactly ONE path will run!
+      <h2 class="slide-title">التفرع الثنائي: الاختيار بين بديلين (if...else)</h2>
+      <div class="concept-banner" style="margin-bottom: 10px;">
+        <strong>المفهوم (التنافي المنطقي):</strong> البرنامج أمام مفترق طرق ذي مسارين حصريين. ينفذ المسار الأول إذا تحقق الشرط (<code style="color: #34d399;">True</code>)، أو ينفذ المسار البديل تلقائياً إذا لم يتحقق (<code style="color: #f87171;">False</code>).
       </div>
 
       <div class="split-layout">
+        <!-- Flowchart -->
         <div class="flowchart-container">
           <div class="flowchart-title">
-            <span>📊</span> Visual Flowchart
+            <span>📊</span> خريطة مسار استخراج رخصة القيادة
           </div>
-          <svg width="340" height="230" viewBox="0 0 340 230" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="110" y="10" width="120" height="30" rx="15" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
-            <text x="170" y="30" fill="#f8fafc" font-size="12" font-weight="700" text-anchor="middle">Input: age = 17</text>
-            <path d="M170 40 V60" stroke="#94a3b8" stroke-width="2"/>
+          <svg width="340" height="210" viewBox="0 0 340 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="110" y="8" width="120" height="26" rx="13" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+            <text x="170" y="25" fill="#f8fafc" font-size="10.5" font-weight="700" text-anchor="middle">السن: 17 سنة</text>
+            <path d="M170 34 V52" stroke="#94a3b8" stroke-width="2"/>
 
-            <polygon points="170,60 250,90 170,120 90,90" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
-            <text x="170" y="94" fill="#fde68a" font-size="11" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">age &gt;= 18?</text>
+            <polygon points="170,52 245,78 170,104 95,78" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+            <text x="170" y="82" fill="#fde68a" font-size="10.5" font-weight="700" font-family="JetBrains Mono" text-anchor="middle">السن &gt;= 18؟</text>
 
-            <path d="M90 90 H45 V130" stroke="#10b981" stroke-width="2"/>
-            <text x="55" y="82" fill="#10b981" font-size="11" font-weight="800">YES</text>
-            <rect x="10" y="130" width="110" height="30" rx="8" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
-            <text x="65" y="150" fill="#ecfdf5" font-size="10" font-weight="700" text-anchor="middle">Issue License</text>
+            <path d="M95 78 H50 V115" stroke="#10b981" stroke-width="2"/>
+            <text x="60" y="72" fill="#10b981" font-size="10.5" font-weight="800">نعم</text>
+            <rect x="10" y="115" width="100" height="28" rx="6" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
+            <text x="60" y="133" fill="#ecfdf5" font-size="10" font-weight="700" text-anchor="middle">إصدار الرخصة</text>
 
-            <path d="M250 90 H295 V130" stroke="#f43f5e" stroke-width="2"/>
-            <text x="265" y="82" fill="#f43f5e" font-size="11" font-weight="800">NO</text>
-            <rect x="220" y="130" width="110" height="30" rx="8" fill="#881337" stroke="#f43f5e" stroke-width="1.5"/>
-            <text x="275" y="150" fill="#ffe4e6" font-size="10" font-weight="700" text-anchor="middle">Reject: Underage</text>
+            <path d="M245 78 H290 V115" stroke="#f43f5e" stroke-width="2"/>
+            <text x="260" y="72" fill="#f43f5e" font-size="10.5" font-weight="800">لا</text>
+            <rect x="230" y="115" width="100" height="28" rx="6" fill="#881337" stroke="#f43f5e" stroke-width="1.5"/>
+            <text x="280" y="133" fill="#ffe4e6" font-size="10" font-weight="700" text-anchor="middle">رفض: تحت السن</text>
 
-            <path d="M65 160 V185 H110" stroke="#94a3b8" stroke-width="2"/>
-            <path d="M275 160 V185 H230" stroke="#94a3b8" stroke-width="2"/>
+            <path d="M60 143 V168 H110" stroke="#94a3b8" stroke-width="2"/>
+            <path d="M280 143 V168 H230" stroke="#94a3b8" stroke-width="2"/>
 
-            <rect x="110" y="175" width="120" height="30" rx="15" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
-            <text x="170" y="195" fill="#cbd5e1" font-size="12" font-weight="700" text-anchor="middle">End Decision</text>
+            <rect x="110" y="160" width="120" height="26" rx="13" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+            <text x="170" y="177" fill="#cbd5e1" font-size="10.5" font-weight="700" text-anchor="middle">نهاية القرار</text>
           </svg>
         </div>
 
+        <!-- Minimal Code -->
         <div class="ide-window">
           <div class="ide-header">
             <div class="ide-dots">
@@ -755,75 +771,73 @@ Check completed.</div>
               <div class="ide-dot dot-yellow"></div>
               <div class="ide-dot dot-green"></div>
             </div>
-            <span class="ide-filename">driving_license.py</span>
-            <span class="ide-lang">Python 3</span>
+            <span class="ide-filename">license.py</span>
+            <span class="ide-lang">تطبيق بايثون</span>
           </div>
-          <div class="ide-code"><span class="cmt"># License Eligibility</span>
-<span class="var">age</span> <span class="op">=</span> <span class="num">17</span>
+          <div class="ide-code"><span class="var">age</span> <span class="op">=</span> <span class="num">17</span>
 
 <span class="kw">if</span> <span class="var">age</span> <span class="op">&gt;=</span> <span class="num">18</span><span class="op">:</span>
-    <span class="fn">print</span>(<span class="str">"✅ Approved: Eligible for license."</span>)
+    <span class="fn">print</span>(<span class="str">"✅ مبروك: مؤهل للرخصة."</span>)
 <span class="kw">else</span><span class="op">:</span>
-    <span class="var">wait_years</span> <span class="op">=</span> <span class="num">18</span> <span class="op">-</span> <span class="var">age</span>
-    <span class="fn">print</span>(<span class="str">"❌ Rejected: Underage applicant."</span>)
-    <span class="fn">print</span>(<span class="str">f"Please reapply in {wait_years} year(s)."</span>)</div>
+    <span class="fn">print</span>(<span class="str">"❌ عذراً: السن غير قانوني."</span>)</div>
           <div class="ide-terminal">
-            <div class="terminal-label">💻 Terminal Output</div>
-            <div class="terminal-output">❌ Rejected: Underage applicant.
-Please reapply in 1 year(s).</div>
+            <div class="terminal-label">💻 مخرجات الشاشة (Terminal)</div>
+            <div class="terminal-output">❌ عذراً: السن غير قانوني.</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>Key Rule: 'else' takes NO condition because it is the automatic fallback</span>
+      <span>ملاحظة مفاهيمية: كلمة 'else' لا تأخذ شرطاً، لأنها تمثل المتمم التلقائي لجميع الحالات الأخرى</span>
       <span>Page 5</span>
     </div>
   </section>
 
-  <!-- ==================== SLIDE 6: MULTI-WAY (IF...ELIF...ELSE) WITH FLOWCHART ==================== -->
+  <!-- ==================== SLIDE 6: MULTI-WAY (IF...ELIF...ELSE) ==================== -->
   <section class="slide" id="slide-6">
     <div class="slide-header">
-      <span class="topic-badge">🔀 Multi-Way Ladder</span>
+      <span class="topic-badge">🔀 التفرع المتعدد (Multi-Way Selection)</span>
       <span class="slide-number">06 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">Multi-Way Decision: The "if...elif...else" Ladder</h2>
-      <div class="definition-box" style="margin-bottom: 12px;">
-        Evaluates conditions from top to bottom. <strong>The first condition that is True runs, and Python immediately skips the rest!</strong>
+      <h2 class="slide-title">التفرع المتعدد: سلم التقييم المتسلسل (if...elif...else)</h2>
+      <div class="concept-banner" style="margin-bottom: 10px;">
+        <strong>قانون التطابق الأول (First Match Wins):</strong> يفحص الكمبيوتر الشروط بالترتيب من الأعلى للأسفل. أول شرط يتحقق (<code style="color: #34d399;">True</code>) ينفذ أمره فوراً ويتجاهل باقي الشروط!
       </div>
 
       <div class="split-layout">
+        <!-- Flowchart -->
         <div class="flowchart-container">
           <div class="flowchart-title">
-            <span>📊</span> Egyptian High School Grading
+            <span>📊</span> خريطة تقييم درجات الثانوية العامة
           </div>
-          <svg width="340" height="230" viewBox="0 0 340 230" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="20" y="10" width="80" height="26" rx="13" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
-            <text x="60" y="27" fill="#f8fafc" font-size="10" font-weight="700" text-anchor="middle">Score: 88.5</text>
-            <path d="M60 36 V50" stroke="#94a3b8" stroke-width="1.5"/>
+          <svg width="340" height="210" viewBox="0 0 340 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="8" width="80" height="24" rx="12" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="60" y="24" fill="#f8fafc" font-size="10" font-weight="700" text-anchor="middle">درجة: 88.5</text>
+            <path d="M60 32 V45" stroke="#94a3b8" stroke-width="1.5"/>
 
-            <polygon points="60,50 115,70 60,90 5,70" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
-            <text x="60" y="73" fill="#fde68a" font-size="10" font-weight="700" text-anchor="middle">&gt;= 85?</text>
-            <path d="M115 70 H190" stroke="#10b981" stroke-width="1.5"/>
-            <rect x="190" y="56" width="140" height="28" rx="6" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
-            <text x="260" y="74" fill="#ecfdf5" font-size="10.5" font-weight="700" text-anchor="middle">Excellent (امتياز) 🌟</text>
+            <polygon points="60,45 115,62 60,80 5,62" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="60" y="65" fill="#fde68a" font-size="9.5" font-weight="700" text-anchor="middle">&gt;= 85؟</text>
+            <path d="M115 62 H190" stroke="#10b981" stroke-width="1.5"/>
+            <rect x="190" y="48" width="140" height="26" rx="6" fill="#065f46" stroke="#10b981" stroke-width="1.5"/>
+            <text x="260" y="65" fill="#ecfdf5" font-size="10" font-weight="700" text-anchor="middle">امتياز (Excellent) 🌟</text>
 
-            <path d="M60 90 V110" stroke="#f43f5e" stroke-width="1.5"/>
-            <polygon points="60,110 115,130 60,150 5,130" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
-            <text x="60" y="133" fill="#fde68a" font-size="10" font-weight="700" text-anchor="middle">&gt;= 75?</text>
-            <path d="M115 130 H190" stroke="#10b981" stroke-width="1.5"/>
-            <rect x="190" y="116" width="140" height="28" rx="6" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1.5"/>
-            <text x="260" y="134" fill="#dbeafe" font-size="10.5" font-weight="700" text-anchor="middle">Very Good (جيد جداً)</text>
+            <path d="M60 80 V98" stroke="#f43f5e" stroke-width="1.5"/>
+            <polygon points="60,98 115,115 60,132 5,115" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="60" y="118" fill="#fde68a" font-size="9.5" font-weight="700" text-anchor="middle">&gt;= 75؟</text>
+            <path d="M115 115 H190" stroke="#10b981" stroke-width="1.5"/>
+            <rect x="190" y="102" width="140" height="26" rx="6" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="260" y="119" fill="#dbeafe" font-size="10" font-weight="700" text-anchor="middle">جيد جداً (Very Good)</text>
 
-            <path d="M60 150 V175 H190" stroke="#f43f5e" stroke-width="1.5"/>
-            <rect x="190" y="165" width="140" height="28" rx="6" fill="#881337" stroke="#f43f5e" stroke-width="1.5"/>
-            <text x="260" y="183" fill="#ffe4e6" font-size="10.5" font-weight="700" text-anchor="middle">Remaining / Retake</text>
+            <path d="M60 132 V155 H190" stroke="#f43f5e" stroke-width="1.5"/>
+            <rect x="190" y="145" width="140" height="26" rx="6" fill="#881337" stroke="#f43f5e" stroke-width="1.5"/>
+            <text x="260" y="162" fill="#ffe4e6" font-size="10" font-weight="700" text-anchor="middle">باقي التقديرات / دور ثان</text>
           </svg>
         </div>
 
+        <!-- Minimal Code -->
         <div class="ide-window">
           <div class="ide-header">
             <div class="ide-dots">
@@ -832,32 +846,26 @@ Please reapply in 1 year(s).</div>
               <div class="ide-dot dot-green"></div>
             </div>
             <span class="ide-filename">grades.py</span>
-            <span class="ide-lang">Python 3</span>
+            <span class="ide-lang">تطبيق بايثون</span>
           </div>
           <div class="ide-code"><span class="var">score</span> <span class="op">=</span> <span class="num">88.5</span>
 
 <span class="kw">if</span> <span class="var">score</span> <span class="op">&gt;=</span> <span class="num">85</span><span class="op">:</span>
-    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Excellent (امتياز) 🌟"</span>
+    <span class="fn">print</span>(<span class="str">"امتياز (Excellent) 🌟"</span>)
 <span class="kw">elif</span> <span class="var">score</span> <span class="op">&gt;=</span> <span class="num">75</span><span class="op">:</span>
-    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Very Good (جيد جداً)"</span>
-<span class="kw">elif</span> <span class="var">score</span> <span class="op">&gt;=</span> <span class="num">65</span><span class="op">:</span>
-    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Good (جيد)"</span>
-<span class="kw">elif</span> <span class="var">score</span> <span class="op">&gt;=</span> <span class="num">50</span><span class="op">:</span>
-    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Pass (مقبول)"</span>
+    <span class="fn">print</span>(<span class="str">"جيد جداً"</span>)
 <span class="kw">else</span><span class="op">:</span>
-    <span class="var">grade</span> <span class="op">=</span> <span class="str">"Fail (راسب) - Summer Retake"</span>
-
-<span class="fn">print</span>(<span class="str">f"Grade: {grade}"</span>)</div>
+    <span class="fn">print</span>(<span class="str">"مقبول / دور ثان"</span>)</div>
           <div class="ide-terminal">
-            <div class="terminal-label">💻 Terminal Output</div>
-            <div class="terminal-output">Grade: Excellent (امتياز) 🌟</div>
+            <div class="terminal-label">💻 مخرجات الشاشة (Terminal)</div>
+            <div class="terminal-output">امتياز (Excellent) 🌟</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>Order Matters: Always arrange conditions from highest to lowest</span>
+      <span>أهمية الترتيب: يجب ترتيب الشروط من الأعلى للأدنى لضمان عدم حجب التقديرات العليا</span>
       <span>Page 6</span>
     </div>
   </section>
@@ -865,14 +873,14 @@ Please reapply in 1 year(s).</div>
   <!-- ==================== SLIDE 7: LOGICAL OPERATORS & TRUTH TABLE ==================== -->
   <section class="slide" id="slide-7">
     <div class="slide-header">
-      <span class="topic-badge">🔗 Combining Conditions</span>
+      <span class="topic-badge">🔗 الربط المنطقي (Logical Operators)</span>
       <span class="slide-number">07 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">Logical Operators & The Complete Truth Table</h2>
-      <div class="definition-box" style="margin-bottom: 12px;">
-        Use <strong>and</strong>, <strong>or</strong>, and <strong>not</strong> to combine multiple checks in a single statement.
+      <h2 class="slide-title">الربط المنطقي وجدول الحقيقة الكامل (and, or, not)</h2>
+      <div class="concept-banner" style="margin-bottom: 10px;">
+        في الحياة العملية، يتطلب اتخاذ القرار التحقق من أكثر من معيار في نفس اللحظة (مثل: معدل مرتفع <strong>و</strong> عدم وجود مخالفات).
       </div>
 
       <div class="split-layout">
@@ -881,48 +889,48 @@ Please reapply in 1 year(s).</div>
           <table>
             <thead>
               <tr>
-                <th>Operator</th>
-                <th>Expression</th>
-                <th>Evaluation</th>
-                <th>Why?</th>
+                <th>المعامل</th>
+                <th>التعبير المنطقي</th>
+                <th>النتيجة</th>
+                <th>التفسير المنطقي</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td class="mono-cell" style="color: #34d399;">and</td>
+                <td class="mono-cell" style="color: #34d399;">and (معاً)</td>
                 <td><code>True and True</code></td>
                 <td><span style="color: #34d399; font-weight: 700;">True</span> ✅</td>
-                <td>Both sides are True</td>
+                <td>صحيح لأن الشرطين تحققا معاً</td>
               </tr>
               <tr>
-                <td class="mono-cell" style="color: #34d399;">and</td>
+                <td class="mono-cell" style="color: #34d399;">and (معاً)</td>
                 <td><code>True and False</code></td>
                 <td><span style="color: #f87171; font-weight: 700;">False</span> ❌</td>
-                <td>One side is False</td>
+                <td>خطأ لأن أحد الشرطين لم يتحقق</td>
               </tr>
               <tr>
-                <td class="mono-cell" style="color: #60a5fa;">or</td>
+                <td class="mono-cell" style="color: #60a5fa;">or (أو)</td>
                 <td><code>True or False</code></td>
                 <td><span style="color: #34d399; font-weight: 700;">True</span> ✅</td>
-                <td>At least one side is True!</td>
+                <td>صحيح لأن شرطاً واحداً يكفي!</td>
               </tr>
               <tr>
-                <td class="mono-cell" style="color: #60a5fa;">or</td>
+                <td class="mono-cell" style="color: #60a5fa;">or (أو)</td>
                 <td><code>False or False</code></td>
                 <td><span style="color: #f87171; font-weight: 700;">False</span> ❌</td>
-                <td>Both sides are False</td>
+                <td>خطأ لأن كلا الشرطين غير متحققين</td>
               </tr>
               <tr>
-                <td class="mono-cell" style="color: #f43f5e;">not</td>
+                <td class="mono-cell" style="color: #f43f5e;">not (نفي)</td>
                 <td><code>not True</code></td>
                 <td><span style="color: #f87171; font-weight: 700;">False</span> ❌</td>
-                <td>Inverts True to False</td>
+                <td>يعكس الصواب إلى خطأ والعكس</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Code Window -->
+        <!-- Minimal Code -->
         <div class="ide-window">
           <div class="ide-header">
             <div class="ide-dots">
@@ -931,27 +939,25 @@ Please reapply in 1 year(s).</div>
               <div class="ide-dot dot-green"></div>
             </div>
             <span class="ide-filename">scholarship.py</span>
-            <span class="ide-lang">Python 3</span>
+            <span class="ide-lang">تطبيق بايثون</span>
           </div>
-          <div class="ide-code"><span class="cmt"># University Scholarship Check</span>
+          <div class="ide-code"><span class="cmt"># شروط المنحة الجامعية</span>
 <span class="var">gpa</span> <span class="op">=</span> <span class="num">3.8</span>
 <span class="var">has_violations</span> <span class="op">=</span> <span class="kw">False</span>
 
-<span class="cmt"># Both conditions must be met:</span>
+<span class="cmt"># يجب تحقق الشرطين معاً (and)</span>
 <span class="kw">if</span> <span class="var">gpa</span> <span class="op">&gt;=</span> <span class="num">3.7</span> <span class="kw">and</span> <span class="kw">not</span> <span class="var">has_violations</span><span class="op">:</span>
-    <span class="fn">print</span>(<span class="str">"🎉 Full Scholarship Awarded!"</span>)
-<span class="kw">else</span><span class="op">:</span>
-    <span class="fn">print</span>(<span class="str">"Standard Admission Track."</span>)</div>
+    <span class="fn">print</span>(<span class="str">"🎉 مبروك: قبول المنحة الكاملة!"</span>)</div>
           <div class="ide-terminal">
-            <div class="terminal-label">💻 Terminal Output</div>
-            <div class="terminal-output">🎉 Full Scholarship Awarded!</div>
+            <div class="terminal-label">💻 مخرجات الشاشة (Terminal)</div>
+            <div class="terminal-output">🎉 مبروك: قبول المنحة الكاملة!</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>Summary: 'and' needs ALL True | 'or' needs ANY True | 'not' flips the result</span>
+      <span>ملخص القواعد: 'and' تتطلب تحقق الكل | 'or' يكفيها تحقق واحد | 'not' تعكس النتيجة المنطقية</span>
       <span>Page 7</span>
     </div>
   </section>
@@ -959,14 +965,14 @@ Please reapply in 1 year(s).</div>
   <!-- ==================== SLIDE 8: COMMON TRAPS ==================== -->
   <section class="slide" id="slide-8">
     <div class="slide-header">
-      <span class="topic-badge">🛠️ Pro Tips</span>
+      <span class="topic-badge">🛠️ مهارات التشخيص (Pro Debugging)</span>
       <span class="slide-number">08 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">Top 3 Traps to Avoid (Common Student Mistakes)</h2>
-      <div class="definition-box" style="margin-bottom: 16px;">
-        Avoid these 3 common pitfalls to ensure your code runs cleanly without errors:
+      <h2 class="slide-title">أشهر 3 أخطاء شائعة يقع فيها الطلاب</h2>
+      <div class="concept-banner" style="margin-bottom: 14px;">
+        فهم هذه الأخطاء يبني لدى الطالب مهارة التفكير النقدي وتصحيح الأخطاء البرمجية (Debugging):
       </div>
 
       <div class="cards-grid-3">
@@ -974,13 +980,13 @@ Please reapply in 1 year(s).</div>
           <div>
             <div class="info-card-header" style="color: #f87171;">
               <span>❌</span>
-              <span>1. Single '=' inside if</span>
+              <span>1. فخ المساواة الواحدة '='</span>
             </div>
             <p class="info-card-desc">
-              Assigning a value instead of comparing throws a <code style="color: #f43f5e;">SyntaxError</code>.
+              استخدام = بدلاً من == داخل الشرط يسبب خطأ نحوياً (SyntaxError) لأنها للتخصيص وليست للمقارنة.
             </p>
           </div>
-          <div class="info-card-code" style="color: #f87171;">
+          <div class="info-card-logic" style="color: #f87171;">
             ❌ if x = 10:<br>
             <span style="color: #34d399;">✅ if x == 10:</span>
           </div>
@@ -990,15 +996,15 @@ Please reapply in 1 year(s).</div>
           <div>
             <div class="info-card-header" style="color: #fde68a;">
               <span>❌</span>
-              <span>2. Wrong elif Order</span>
+              <span>2. خطأ ترتيب الشروط</span>
             </div>
             <p class="info-card-desc">
-              Putting a loose condition first triggers too early and breaks the grading!
+              وضع شرط واسع في البداية (مثل >= 50 قبل >= 85) يحجب التقديرات العليا تماماً!
             </p>
           </div>
-          <div class="info-card-code" style="color: #fde68a;">
-            ❌ if score &gt;= 50 (First!)<br>
-            <span style="color: #34d399;">✅ if score &gt;= 85 (First!)</span>
+          <div class="info-card-logic" style="color: #fde68a;">
+            ❌ if score &gt;= 50 (أولاً!)<br>
+            <span style="color: #34d399;">✅ if score &gt;= 85 (أولاً!)</span>
           </div>
         </div>
 
@@ -1006,13 +1012,13 @@ Please reapply in 1 year(s).</div>
           <div>
             <div class="info-card-header" style="color: #93c5fd;">
               <span>❌</span>
-              <span>3. Missing Colon ':'</span>
+              <span>3. نسيان النقطتين والمسافة</span>
             </div>
             <p class="info-card-desc">
-              Forgetting the colon at the end of the <code style="color: #60a5fa;">if</code> line causes an error.
+              نسيان النقطتين (:) أو عدم ترك مسافة بادئة يربك المترجم ويمنعه من معرفة كتلة الكود.
             </p>
           </div>
-          <div class="info-card-code" style="color: #93c5fd;">
+          <div class="info-card-logic" style="color: #93c5fd;">
             ❌ if score &gt; 50<br>
             <span style="color: #34d399;">✅ if score &gt; 50:</span>
           </div>
@@ -1021,7 +1027,7 @@ Please reapply in 1 year(s).</div>
     </div>
 
     <div class="slide-footer">
-      <span>Diagnostic Skills for Secondary 2 Students</span>
+      <span>نصيحة للمدرس: شجع الطلاب دائماً على تتبع الكود على الورق قبل تشغيله على الحاسب</span>
       <span>Page 8</span>
     </div>
   </section>
@@ -1029,14 +1035,14 @@ Please reapply in 1 year(s).</div>
   <!-- ==================== SLIDE 9: INTERACTIVE LIVE QUIZ ==================== -->
   <section class="slide" id="slide-9">
     <div class="slide-header">
-      <span class="topic-badge">⚡ Classroom Quiz</span>
+      <span class="topic-badge">⚡ التفكير التفاعلي (Classroom Challenge)</span>
       <span class="slide-number">09 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">Interactive Challenge: Trace the Output!</h2>
-      <div class="definition-box" style="margin-bottom: 12px;">
-        Trace the values of <strong>x = 10</strong> and <strong>y = 5</strong> step-by-step to predict what Python will print:
+      <h2 class="slide-title">تحدي التتبع المنطقي: توقع المخرج البرمجي!</h2>
+      <div class="concept-banner" style="margin-bottom: 10px;">
+        تتبع قيم المتغيرات <strong>x = 10</strong> و <strong>y = 5</strong> خطوة بخطوة لمعرفة أي رسالة سيتم طباعتها:
       </div>
 
       <div class="split-layout">
@@ -1049,44 +1055,44 @@ Please reapply in 1 year(s).</div>
               <div class="ide-dot dot-green"></div>
             </div>
             <span class="ide-filename">quiz_challenge.py</span>
-            <span class="ide-lang">Challenge</span>
+            <span class="ide-lang">تحدي الفصل</span>
           </div>
           <div class="ide-code"><span class="var">x</span> <span class="op">=</span> <span class="num">10</span>
 <span class="var">y</span> <span class="op">=</span> <span class="num">5</span>
 
 <span class="kw">if</span> <span class="var">x</span> <span class="op">&gt;</span> <span class="num">8</span> <span class="kw">and</span> <span class="var">y</span> <span class="op">&gt;</span> <span class="num">6</span><span class="op">:</span>
-    <span class="fn">print</span>(<span class="str">"Option A"</span>)
+    <span class="fn">print</span>(<span class="str">"الخيار A"</span>)
 <span class="kw">elif</span> <span class="var">x</span> <span class="op">&gt;</span> <span class="num">8</span> <span class="kw">or</span> <span class="var">y</span> <span class="op">&gt;</span> <span class="num">6</span><span class="op">:</span>
-    <span class="fn">print</span>(<span class="str">"Option B"</span>)
+    <span class="fn">print</span>(<span class="str">"الخيار B"</span>)
 <span class="kw">else</span><span class="op">:</span>
-    <span class="fn">print</span>(<span class="str">"Option C"</span>)</div>
+    <span class="fn">print</span>(<span class="str">"الخيار C"</span>)</div>
         </div>
 
         <!-- Explanation & Options -->
         <div style="display: flex; flex-direction: column; gap: 8px; justify-content: center;">
-          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
-            <span style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">A</span>
-            <span>Option A (False: <code>y > 6</code> is False, fails the <strong>and</strong>)</span>
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 9px 14px; font-size: 13.5px; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
+            <span style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700;">A</span>
+            <span>الخيار A (خطأ: لأن <code>y > 6</code> غير صحيح، والـ <strong>and</strong> تتطلب صحة الاثنين)</span>
           </div>
 
-          <div style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; border-radius: 10px; padding: 10px 14px; font-size: 14px; font-weight: 800; color: #34d399; display: flex; align-items: center; justify-content: space-between;">
+          <div style="background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; border-radius: 10px; padding: 9px 14px; font-size: 13.5px; font-weight: 800; color: #34d399; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 10px;">
-              <span style="width: 24px; height: 24px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px;">B</span>
-              <span>Option B (CORRECT ANSWER ✅)</span>
+              <span style="width: 24px; height: 24px; border-radius: 50%; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11.5px;">B</span>
+              <span>الخيار B (الإجابة الصحيحة ✅)</span>
             </div>
-            <span style="font-size: 11px; background: rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 4px;"><code>x > 8</code> is True (passes the 'or')</span>
+            <span style="font-size: 11px; background: rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 4px;"><code>x > 8</code> صحيحة وتحقق الـ 'or'</span>
           </div>
 
-          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 10px 14px; font-size: 14px; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
-            <span style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">C</span>
-            <span>Option C</span>
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 9px 14px; font-size: 13.5px; color: #94a3b8; display: flex; align-items: center; gap: 10px;">
+            <span style="width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 700;">C</span>
+            <span>الخيار C</span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>Teacher Tip: Walk students through line 4 (fails and) then line 6 (passes or)</span>
+      <span>توجيه تربوي: ناقش مع الطلاب لماذا نجح الخيار B رغم أن y ليست أكبر من 6 (بسبب مرونة المعامل or)</span>
       <span>Page 9</span>
     </div>
   </section>
@@ -1094,39 +1100,41 @@ Please reapply in 1 year(s).</div>
   <!-- ==================== SLIDE 10: CASE STUDY ==================== -->
   <section class="slide" id="slide-10">
     <div class="slide-header">
-      <span class="topic-badge">💼 Real-World Application</span>
+      <span class="topic-badge">💼 التطبيق الهندسي الواقعي</span>
       <span class="slide-number">10 / 11</span>
     </div>
 
     <div class="slide-body">
-      <h2 class="slide-title">Case Study: Fawry Smart Promo Checkout</h2>
-      <div class="definition-box" style="margin-bottom: 12px;">
-        <strong>Scenario:</strong> A customer buys goods worth <strong>650 EGP</strong>. Free Delivery is awarded if <code style="color: #60a5fa;">order &gt;= 500 EGP</code> <strong>AND</strong> promo code is <code style="color: #60a5fa;">'EGYPT2026'</code>.
+      <h2 class="slide-title">دراسة حالة برمجية: نظام حساب الخصم والشحن الذكي (فوري)</h2>
+      <div class="concept-banner" style="margin-bottom: 10px;">
+        <strong>الموقف:</strong> عميل يشتري بقيمة <strong>650 ج.م</strong>. تمنحه المنصة شحناً مجانياً إذا تجاوزت الفاتورة <code style="color: #60a5fa;">500 ج.م</code> <strong>مع</strong> استخدام كوبون <code style="color: #60a5fa;">'EGYPT2026'</code>.
       </div>
 
       <div class="split-layout">
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div class="info-card" style="padding: 12px 14px;">
-            <div class="info-card-header" style="font-size: 14px; margin-bottom: 4px;">
-              <span>1️⃣ Input Data</span>
+        <!-- Breakdown -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="info-card" style="padding: 10px 14px;">
+            <div class="info-card-header" style="font-size: 13.5px; margin-bottom: 3px;">
+              <span>1️⃣ المدخلات (Data)</span>
             </div>
-            <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #cbd5e1;">
-              cart_total = 650<br>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #cbd5e1;">
+              cart_total = 650 EGP<br>
               promo = "EGYPT2026"
             </div>
           </div>
 
-          <div class="info-card" style="padding: 12px 14px; border-color: #10b981;">
-            <div class="info-card-header" style="font-size: 14px; margin-bottom: 4px; color: #34d399;">
-              <span>2️⃣ Compound Check (and)</span>
+          <div class="info-card" style="padding: 10px 14px; border-color: #10b981;">
+            <div class="info-card-header" style="font-size: 13.5px; margin-bottom: 3px; color: #34d399;">
+              <span>2️⃣ تقييم الشرط المركب (Logic)</span>
             </div>
-            <div style="font-size: 12.5px; color: #ecfdf5;">
-              cart &gt;= 500 (True) <strong>AND</strong> promo match (True)<br>
-              ➔ Both are True: <strong>Free Delivery!</strong>
+            <div style="font-size: 12px; color: #ecfdf5;">
+              القيمة >= 500 (True) <strong>AND</strong> الكوبون مطابق (True)<br>
+              ➔ النتيجة النهائية: <strong>شحن مجاني (توفير 50 ج.م)</strong>
             </div>
           </div>
         </div>
 
+        <!-- Minimal Code -->
         <div class="ide-window">
           <div class="ide-header">
             <div class="ide-dots">
@@ -1135,79 +1143,78 @@ Please reapply in 1 year(s).</div>
               <div class="ide-dot dot-green"></div>
             </div>
             <span class="ide-filename">fawry_checkout.py</span>
-            <span class="ide-lang">Python 3</span>
+            <span class="ide-lang">تطبيق بايثون</span>
           </div>
-          <div class="ide-code"><span class="var">cart_total</span> <span class="op">=</span> <span class="num">650</span>
+          <div class="ide-code"><span class="var">cart</span> <span class="op">=</span> <span class="num">650</span>
 <span class="var">promo</span> <span class="op">=</span> <span class="str">"EGYPT2026"</span>
-<span class="var">delivery_fee</span> <span class="op">=</span> <span class="num">50</span>
+<span class="var">shipping</span> <span class="op">=</span> <span class="num">50</span>
 
-<span class="kw">if</span> <span class="var">cart_total</span> <span class="op">&gt;=</span> <span class="num">500</span> <span class="kw">and</span> <span class="var">promo</span> <span class="op">==</span> <span class="str">"EGYPT2026"</span><span class="op">:</span>
-    <span class="var">delivery_fee</span> <span class="op">=</span> <span class="num">0</span>
-    <span class="fn">print</span>(<span class="str">"🎉 Free Delivery Applied!"</span>)
+<span class="kw">if</span> <span class="var">cart</span> <span class="op">&gt;=</span> <span class="num">500</span> <span class="kw">and</span> <span class="var">promo</span> <span class="op">==</span> <span class="str">"EGYPT2026"</span><span class="op">:</span>
+    <span class="var">shipping</span> <span class="op">=</span> <span class="num">0</span>
+    <span class="fn">print</span>(<span class="str">"🎉 تم تطبيق الشحن المجاني!"</span>)
 
-<span class="var">total</span> <span class="op">=</span> <span class="var">cart_total</span> <span class="op">+</span> <span class="var">delivery_fee</span>
-<span class="fn">print</span>(<span class="str">f"Final Bill: {total} EGP"</span>)</div>
+<span class="fn">print</span>(<span class="str">f"إجمالي الفاتورة: {cart + shipping} ج.م"</span>)</div>
           <div class="ide-terminal">
-            <div class="terminal-label">💻 Terminal Output</div>
-            <div class="terminal-output">🎉 Free Delivery Applied!
-Final Bill: 650 EGP</div>
+            <div class="terminal-label">💻 مخرجات الشاشة (Terminal)</div>
+            <div class="terminal-output">🎉 تم تطبيق الشحن المجاني!
+إجمالي الفاتورة: 650 ج.م</div>
           </div>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>Practical Engineering: Solving real business logic with simple Python</span>
+      <span>التفكير البرمجي: تحويل القواعد الحياتية وقوانين الأعمال إلى أوامر منطقية دقيقة</span>
       <span>Page 10</span>
     </div>
   </section>
 
-  <!-- ==================== SLIDE 11: MASTERY & ROADMAP ==================== -->
+  <!-- ==================== SLIDE 11: SUMMARY & ROADMAP ==================== -->
   <section class="slide" id="slide-11">
     <div class="slide-header">
-      <span class="topic-badge">🏆 Lesson Complete</span>
+      <span class="topic-badge">🏆 خلاصة الدرس (Summary)</span>
       <span class="slide-number">11 / 11</span>
     </div>
 
     <div class="slide-body" style="text-align: center; align-items: center;">
-      <div style="font-size: 46px; margin-bottom: 10px;">🎉</div>
-      <h2 class="slide-title" style="font-size: 38px; margin-bottom: 10px;">
-        Mastery Unlocked: Conditional Statements!
+      <div style="font-size: 42px; margin-bottom: 8px;">🎉</div>
+      <h2 class="slide-title" style="font-size: 36px; margin-bottom: 8px;">
+        مبروك! أتقنت التفكير المنطقي واتخاذ القرار البرمجي
       </h2>
-      <p style="font-size: 18px; max-width: 850px; margin-bottom: 20px; color: #cbd5e1;">
-        You now know how to make your programs make intelligent choices using <strong>if</strong>, <strong>else</strong>, <strong>elif</strong>, and logical operators.
+      <p style="font-size: 17.5px; max-width: 850px; margin-bottom: 18px; color: #cbd5e1;">
+        البرمجة ليست مجرد كتابة كود، بل هي فن هيكلة المنطق وبناء حلول ذكية للمشاكل الحقيقية.
       </p>
 
-      <div style="background: var(--bg-card-glass); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px 28px; max-width: 780px; text-align: left; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);">
-        <h3 style="font-size: 15px; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px;">
-          🚀 Next Up in Secondary 2 Curriculum:
+      <div style="background: var(--bg-card-glass); border: 1px solid var(--border-color); border-radius: 16px; padding: 18px 26px; max-width: 780px; text-align: left; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);">
+        <h3 style="font-size: 14.5px; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+          🚀 الخطوات القادمة في المنهج الدراسي:
         </h3>
-        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14.5px; color: #e2e8f0;">
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #e2e8f0;">
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="color: #34d399; font-weight: 800;">1.</span>
-            <span><strong>Nested If Statements:</strong> Decisions inside decisions.</span>
+            <span><strong>الشروط المتداخلة (Nested If):</strong> اتخاذ قرار داخل قرار آخر للأنظمة المعقدة.</span>
           </div>
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="color: #34d399; font-weight: 800;">2.</span>
-            <span><strong>Loops (For & While):</strong> Automating repetitive tasks.</span>
+            <span><strong>حلقات التكرار (Loops - For & While):</strong> أتمتة المهام وتكرار الأوامر بذكاء.</span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="slide-footer">
-      <span>Wadha Learning Platform • Secondary 2</span>
-      <span>Thank You! (Questions & Discussion)</span>
+      <span>منصة وضحى التعليمية • الصف الثاني الثانوي</span>
+      <span>شكراً لكم! (وقت النقاش والأسئلة)</span>
     </div>
   </section>
 
 </div>
 
 <div class="nav-bar no-print">
-  <button class="nav-btn" onclick="prevSlide()">← Prev</button>
+  <button class="nav-btn" onclick="prevSlide()">← السابق</button>
   <span class="nav-counter" id="slideCounter">1 / 11</span>
-  <button class="nav-btn" onclick="nextSlide()">Next →</button>
-  <button class="nav-btn" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+  <button class="nav-btn" onclick="nextSlide()">التالي →</button>
+  <button class="nav-btn" onclick="toggleFullscreen()">⛶ شاشة كاملة</button>
 </div>
 
 <script>
